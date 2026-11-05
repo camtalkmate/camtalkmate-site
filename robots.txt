@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /privacy.html
+Disallow: /withdraw.html
+Disallow: /withdraw-done.html
+Disallow: /admin/
+
+Sitemap: https://camtalkmate.com/sitemap.xml

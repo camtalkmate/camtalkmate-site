@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>관리자 | 캠톡메이트</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFF9F7">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/img/icon-32.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="../assets/css/site.css">
+<link rel="stylesheet" href="../assets/css/form.css">
+<script src="../assets/js/config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+.adm-shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px; align-items: start; }
+.adm-side { position: sticky; top: 90px; display: grid; gap: 6px; padding: 12px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--vol); }
+.adm-side a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; text-decoration: none; color: var(--ink-2); font-weight: 700; font-size: var(--t-s); }
+.adm-side a.on { background: var(--grad); color: #fff; box-shadow: var(--glow); }
+.adm-side a:not(.on):hover { background: var(--rose-soft); color: var(--rose-2); }
+.adm-side a svg { width: 18px; height: 18px; }
+.adm-side .who { padding: 10px 14px 4px; font-size: var(--t-xs); color: var(--ink-3); }
+.adm-side .who b { display: block; color: var(--ink); font-size: var(--t-s); }
+.view { display: grid; gap: 18px; }
+.view[hidden] { display: none; }
+.ad-list { display: grid; gap: 10px; }
+.ad-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 14px 18px; border-radius: 16px; background: var(--surface); box-shadow: var(--vol); }
+.ad-row b { font-size: var(--t-m); }
+.ad-row small { display: block; color: var(--ink-3); font-size: var(--t-xs); }
+.ad-row .role { display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700; background: var(--rose-soft); color: var(--rose-2); vertical-align: middle; }
+.ad-row .role.staff { background: #EEF0FF; color: #3B4AA6; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ok-msg { padding: 12px 16px; border-radius: 12px; background: #E6F8EF; color: #1F6B45; font-size: var(--t-s); font-weight: 600; }
+.link-card { display: grid; gap: 10px; padding: 22px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--vol); }
+.link-card h3 { font-size: var(--t-l); }
+.link-card p { color: var(--ink-2); font-size: var(--t-s); }
+@media (max-width: 760px) {
+  .adm-shell { grid-template-columns: 1fr; }
+  .adm-side { position: static; grid-template-columns: repeat(2, 1fr); }
+  .adm-side .who { grid-column: 1 / -1; }
+  .adm-side a { padding: 11px 12px; }
+}
+</style>
+</head>
+<body class="page-form">
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="../" aria-label="홈으로"><span class="logo-mark" aria-hidden="true">M</span><span>캠톡메이트<small>관리자</small></span></a>
+    <div class="header-cta" style="margin-left:auto;display:flex;gap:8px">
+      <a class="btn btn--ghost btn--sm" href="../" target="_blank" rel="noopener">사이트 보기</a>
+      <button class="btn btn--ghost btn--sm" id="logout" type="button" hidden>로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap adm">
+  <!-- 로그인 -->
+  <form class="fbox adm-login" id="login">
+    <h1 style="font-size:var(--t-xl);font-weight:800">관리자 로그인</h1>
+    <div class="fm-field"><label for="lid">아이디</label><input id="lid" type="text" autocomplete="username" autocapitalize="off" required></div>
+    <div class="fm-field"><label for="lpw">비밀번호</label><input id="lpw" type="password" autocomplete="current-password" required></div>
+    <p class="fm-error" id="lerr" hidden></p>
+    <button class="btn btn--primary" type="submit" id="lbtn">로그인</button>
+  </form>
+
+  <!-- 대시보드 -->
+  <div class="adm-shell" id="shell" hidden>
+    <nav class="adm-side" aria-label="관리 메뉴">
+      <div class="who">로그인 계정<b id="whoName"></b></div>
+      <a href="#withdraw" data-view="withdraw" class="on"><svg><use href="#i-wallet"/></svg>출금신청</a>
+      <a href="#board" data-view="board"><svg><use href="#i-book"/></svg>게시판</a>
+      <a href="#admins" data-view="admins"><svg><use href="#i-user"/></svg>관리자 계정</a>
+      <a href="#settings" data-view="settings"><svg><use href="#i-shield"/></svg>사이트 설정</a>
+    </nav>
+
+    <!-- 출금신청 -->
+    <section class="view" id="v-withdraw">
+      <div class="adm-top">
+        <h1>출금신청 <span class="grad">관리</span></h1>
+        <button class="btn btn--ghost btn--sm" id="refresh" type="button">새로고침</button>
+        <button class="btn btn--primary btn--sm" id="xlsx" type="button">엑셀 다운로드</button>
+      </div>
+      <div class="adm-stats">
+        <div class="adm-stat hot"><span>대기 중</span><strong id="sWait">0건</strong></div>
+        <div class="adm-stat hot"><span>대기 금액</span><strong id="sWaitAmt">0원</strong></div>
+        <div class="adm-stat"><span>오늘 송금완료</span><strong id="sToday">0건</strong></div>
+        <div class="adm-stat"><span>전체 누적 송금</span><strong id="sTotal">0원</strong></div>
+      </div>
+      <div class="adm-bar">
+        <div class="seg" id="seg">
+          <button type="button" data-f="all" class="on">전체</button><button type="button" data-f="대기">대기</button><button type="button" data-f="송금완료">송금완료</button><button type="button" data-f="보류">보류</button><button type="button" data-f="취소">취소</button>
+        </div>
+        <input type="search" id="q" placeholder="닉네임 · 전화번호 · 예금주 · 접수번호 검색">
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl" id="tbl">
+          <thead><tr><th>접수번호</th><th>접수일시</th><th>상태</th><th>처리</th><th>닉네임</th><th style="text-align:right">금액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>전화번호</th><th>주민번호</th><th>메모</th><th>처리일시</th></tr></thead>
+          <tbody id="tb"></tbody>
+        </table>
+        <div class="adm-empty" id="empty" hidden>표시할 신청이 없어요</div>
+      </div>
+      <p class="adm-note">· 표는 옆으로 밀어서 볼 수 있어요. · 송금을 마친 뒤 <strong>송금완료</strong>를 누르면 처리일시가 자동 기록됩니다. · 주민번호는 "보기"를 눌렀을 때만 표시됩니다. · 엑셀 파일에는 주민번호까지 들어가니 보관에 주의하세요.</p>
+    </section>
+
+    <!-- 게시판 -->
+    <section class="view" id="v-board" hidden>
+      <div class="adm-top"><h1>게시판 <span class="grad">글 관리</span></h1></div>
+      <div class="link-card">
+        <h3>글쓰기 · 수정 · 삭제</h3>
+        <p>게시판 글은 사이트 파일 창고(GitHub)에 저장되기 때문에 글 편집기는 별도 창에서 열립니다. 처음 한 번만 "Login with GitHub"를 누르면 그 다음부터는 바로 열려요. 글을 쓰고 <strong>발행</strong>을 누르면 1~2분 뒤 사이트에 반영됩니다.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="board/" target="_blank" rel="noopener">글 편집기 열기</a><a class="btn btn--ghost" href="../board/" target="_blank" rel="noopener">게시판 보기</a></div>
+        <p class="adm-note">사이트가 GitHub·Netlify에 연결되기 전에는 편집기가 동작하지 않습니다. (배포-안내서 4단계)</p>
+      </div>
+    </section>
+
+    <!-- 관리자 계정 -->
+    <section class="view" id="v-admins" hidden>
+      <div class="adm-top"><h1>관리자 <span class="grad">계정</span></h1></div>
+      <div class="ad-list" id="adList"></div>
+      <div class="grid2">
+        <form class="fbox" id="addForm" hidden>
+          <h2 class="fm-h2">계정 추가 <small>최고관리자만</small></h2>
+          <div class="fm-field"><label for="aId">아이디</label><input id="aId" type="text" placeholder="영문 소문자·숫자 3~20자" autocapitalize="off" autocomplete="off" required></div>
+          <div class="fm-field"><label for="aName">이름</label><input id="aName" type="text" placeholder="예: 김매니저" autocomplete="off"></div>
+          <div class="fm-field"><label for="aPw">비밀번호</label><input id="aPw" type="password" placeholder="8자 이상" autocomplete="new-password" required></div>
+          <div class="fm-field"><label for="aRole">권한</label><select id="aRole"><option value="staff">일반 관리자 (출금 처리·조회)</option><option value="master">최고관리자 (계정 관리까지)</option></select></div>
+          <p class="fm-error" id="aErr" hidden></p>
+          <button class="btn btn--primary" type="submit">계정 추가</button>
+        </form>
+        <form class="fbox" id="pwForm">
+          <h2 class="fm-h2">내 비밀번호 변경</h2>
+          <div class="fm-field"><label for="pOld">현재 비밀번호</label><input id="pOld" type="password" autocomplete="current-password" required></div>
+          <div class="fm-field"><label for="pNew">새 비밀번호</label><input id="pNew" type="password" placeholder="8자 이상" autocomplete="new-password" required></div>
+          <div class="fm-field"><label for="pNew2">새 비밀번호 확인</label><input id="pNew2" type="password" autocomplete="new-password" required></div>
+          <p class="fm-error" id="pErr" hidden></p>
+          <p class="ok-msg" id="pOk" hidden>비밀번호를 바꿨어요</p>
+          <button class="btn btn--primary" type="submit">변경</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 설정 -->
+    <section class="view" id="v-settings" hidden>
+      <div class="adm-top"><h1>사이트 <span class="grad">설정</span></h1></div>
+      <div class="link-card">
+        <h3>카톡 링크 · 연락처 · 안내 문구</h3>
+        <p>사이트에 표시되는 연락처와 문구는 <code>assets/js/config.js</code> 파일에 모여 있습니다. 사이트가 GitHub에 연결되면 이 화면에서 바로 고칠 수 있도록 준비 중이에요. 그 전에는 담당자(Claude)에게 바꿀 값을 알려주시면 반영해 드립니다.</p>
+        <p class="adm-note">준비 중 · 2단계(GitHub 연결) 이후 제공</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="../assets/js/site.js"></script>
+<script>
+(function () {
+  "use strict";
+  var EP = (window.SITE && SITE.withdraw && SITE.withdraw.endpoint) || "";
+  var $ = function (s) { return document.querySelector(s); }, $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
+  var won = function (n) { return Math.round(+n || 0).toLocaleString("ko-KR"); };
+  var fmtD = function (d) { d = String(d || ""); return /T\d\d:\d\d:\d\d/.test(d) ? new Date(d).toLocaleString("sv-SE").replace("T", " ").slice(0, 16) : d; };
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var token = "", user = null, rows = [], filter = "all", query = "";
+  try { token = sessionStorage.getItem("adm_token") || ""; user = JSON.parse(sessionStorage.getItem("adm_user") || "null"); } catch (e) {}
+
+  function api(data) {
+    data.token = token;
+    return fetch(EP, { method: "POST", body: JSON.stringify(data) }).then(function (r) { return r.json(); }).then(function (r) {
+      if (!r.ok && r.auth) { signOut(); throw new Error("로그인이 만료됐어요. 다시 로그인해 주세요"); }
+      return r;
+    });
+  }
+  function signOut() { token = ""; user = null; try { sessionStorage.removeItem("adm_token"); sessionStorage.removeItem("adm_user"); } catch (e) {} $("#shell").hidden = true; $("#logout").hidden = true; $("#login").hidden = false; }
+
+  /* 로그인 */
+  var login = $("#login"), lerr = $("#lerr"), lbtn = $("#lbtn");
+  if (!EP) { lerr.textContent = "config.js 의 withdraw.endpoint 가 비어 있어요. 출금신청-설정.md 를 보고 Apps Script 주소를 먼저 넣어 주세요."; lerr.hidden = false; lbtn.disabled = true; }
+  login.addEventListener("submit", function (e) {
+    e.preventDefault(); lerr.hidden = true; lbtn.disabled = true; lbtn.textContent = "확인 중…";
+    fetch(EP, { method: "POST", body: JSON.stringify({ action: "login", id: $("#lid").value.trim(), pw: $("#lpw").value }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.error || "로그인 실패");
+        token = r.token; user = r.user;
+        try { sessionStorage.setItem("adm_token", token); sessionStorage.setItem("adm_user", JSON.stringify(user)); } catch (e2) {}
+        $("#lpw").value = ""; enter();
+      })
+      .catch(function (ex) { lerr.textContent = ex.message || "연결에 실패했어요"; lerr.hidden = false; })
+      .then(function () { lbtn.disabled = false; lbtn.textContent = "로그인"; });
+  });
+  $("#logout").addEventListener("click", signOut);
+  function enter() {
+    login.hidden = true; $("#shell").hidden = false; $("#logout").hidden = false;
+    $("#whoName").textContent = user.name + " (" + user.id + (user.role === "master" ? " · 최고관리자" : "") + ")";
+    $("#addForm").hidden = user.role !== "master";
+    show((location.hash || "#withdraw").slice(1));
+  }
+  if (token && user && EP) enter();
+
+  /* 메뉴 */
+  function show(v) {
+    if (!$("#v-" + v)) v = "withdraw";
+    $$(".view").forEach(function (s) { s.hidden = s.id !== "v-" + v; });
+    $$(".adm-side a").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-view") === v); });
+    if (v === "withdraw" && !rows.length) loadWd();
+    if (v === "admins") loadAdmins();
+  }
+  window.addEventListener("hashchange", function () { if (token) show(location.hash.slice(1)); });
+
+  /* ---------- 출금신청 ---------- */
+  function loadWd() {
+    $("#tb").innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--ink-3)">불러오는 중…</td></tr>';
+    api({ action: "wd.list" }).then(function (r) { if (!r.ok) throw new Error(r.error); rows = r.rows || []; render(); })
+      .catch(function (ex) { $("#tb").innerHTML = '<tr><td colspan="13" style="padding:30px;color:#9A4411">' + esc(ex.message || "불러오기 실패") + "</td></tr>"; });
+  }
+  $("#refresh").addEventListener("click", loadWd);
+  $("#seg").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    filter = b.getAttribute("data-f"); [].forEach.call($("#seg").children, function (c) { c.classList.toggle("on", c === b); }); render();
+  });
+  $("#q").addEventListener("input", function () { query = this.value.trim().toLowerCase(); render(); });
+  function amt(r) { return +String(r.amount).replace(/[^0-9]/g, "") || 0; }
+  function visible() {
+    return rows.filter(function (r) {
+      if (filter !== "all" && r.status !== filter) return false;
+      return !query || [r.id, r.nick, r.phone, r.holder, r.account, r.bank].join(" ").toLowerCase().indexOf(query) >= 0;
+    });
+  }
+  function render() {
+    var list = visible(), today = new Date().toLocaleDateString("sv-SE");
+    var wait = rows.filter(function (r) { return r.status === "대기"; });
+    $("#sWait").textContent = wait.length + "건";
+    $("#sWaitAmt").textContent = won(wait.reduce(function (a, r) { return a + amt(r); }, 0)) + "원";
+    $("#sToday").textContent = rows.filter(function (r) { return r.status === "송금완료" && String(r.doneAt).indexOf(today) === 0; }).length + "건";
+    $("#sTotal").textContent = won(rows.filter(function (r) { return r.status === "송금완료"; }).reduce(function (a, r) { return a + amt(r); }, 0)) + "원";
+    $("#empty").hidden = list.length > 0;
+    $("#tb").innerHTML = list.map(function (r) {
+      return '<tr class="' + (r.status === "송금완료" ? "row-done" : "") + '" data-id="' + esc(r.id) + '">' +
+        '<td class="mono">' + esc(r.id) + '</td><td class="mono">' + esc(r.at) + "</td>" +
+        '<td><span class="st st--' + esc(r.status) + '">' + esc(r.status) + "</span></td>" +
+        '<td><div class="act">' +
+          (r.status !== "송금완료" ? '<button type="button" class="ok" data-act="st" data-v="송금완료">송금완료</button>' : '<button type="button" data-act="st" data-v="대기">대기로</button>') +
+          (r.status !== "보류" ? '<button type="button" data-act="st" data-v="보류">보류</button>' : "") +
+          (r.status !== "취소" ? '<button type="button" data-act="st" data-v="취소">취소</button>' : "") +
+        "</div></td>" +
+        "<td><strong>" + esc(r.nick) + "</strong></td>" +
+        '<td class="num">' + won(amt(r)) + "원</td><td>" + esc(r.bank) + '</td><td class="mono">' + esc(r.account) + "</td><td>" + esc(r.holder) + "</td>" +
+        '<td class="mono">' + esc(r.phone) + "</td>" +
+        '<td class="mono rrn-cell"><span data-m="' + esc(r.rrnFront) + "-" + esc(r.rrnBack) + '">' + esc(r.rrnFront) + "-" + esc(String(r.rrnBack).slice(0, 1)) + '******</span><button type="button" data-act="rrn">보기</button></td>' +
+        '<td><input class="memo" value="' + esc(r.memo) + '" placeholder="메모" data-act="memo"></td>' +
+        '<td class="mono">' + esc(r.doneAt) + "</td></tr>";
+    }).join("");
+  }
+  $("#tb").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var tr = b.closest("tr"), id = tr.getAttribute("data-id");
+    if (b.getAttribute("data-act") === "rrn") {
+      var sp = tr.querySelector(".rrn-cell span"), shown = b.textContent === "숨김";
+      sp.textContent = shown ? sp.getAttribute("data-m").slice(0, 8) + "******" : sp.getAttribute("data-m"); b.textContent = shown ? "보기" : "숨김"; return;
+    }
+    if (b.getAttribute("data-act") === "st") {
+      var v = b.getAttribute("data-v");
+      if (v === "취소" && !tr.classList.contains("confirm")) { tr.classList.add("confirm"); b.textContent = "정말 취소?"; setTimeout(function () { tr.classList.remove("confirm"); b.textContent = "취소"; }, 2500); return; }
+      b.disabled = true;
+      api({ action: "wd.status", id: id, status: v }).then(function (r) {
+        if (!r.ok) throw new Error(r.error);
+        var row = rows.find(function (x) { return x.id === id; });
+        row.status = v; row.doneAt = v === "대기" ? "" : new Date().toLocaleString("sv-SE").replace("T", " "); render();
+      }).catch(function (ex) { alert(ex.message || "처리 실패"); b.disabled = false; });
+    }
+  });
+  var memoTimer = {};
+  $("#tb").addEventListener("input", function (e) {
+    var inp = e.target; if (inp.getAttribute("data-act") !== "memo") return;
+    var id = inp.closest("tr").getAttribute("data-id"); clearTimeout(memoTimer[id]);
+    memoTimer[id] = setTimeout(function () {
+      api({ action: "wd.memo", id: id, memo: inp.value }).then(function (r) {
+        if (r.ok) { var row = rows.find(function (x) { return x.id === id; }); if (row) row.memo = inp.value; inp.style.boxShadow = "0 0 0 2px #10A876 inset"; setTimeout(function () { inp.style.boxShadow = ""; }, 800); }
+      });
+    }, 700);
+  });
+  $("#xlsx").addEventListener("click", function () {
+    var list = visible(); if (!list.length) { alert("내보낼 항목이 없어요"); return; }
+    if (!window.XLSX) { alert("엑셀 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요"); return; }
+    var data = list.map(function (r) {
+      return { "접수번호": r.id, "접수일시": r.at, "상태": r.status, "캠톡 닉네임": r.nick, "전화번호": r.phone, "신청금액": amt(r), "은행": r.bank, "계좌번호": r.account, "예금주": r.holder, "주민등록번호": r.rrnFront + "-" + r.rrnBack, "메모": r.memo, "처리일시": r.doneAt, "유입경로": r.utm };
+    });
+    var ws = XLSX.utils.json_to_sheet(data); ws["!cols"] = [12, 18, 8, 14, 14, 11, 10, 18, 10, 16, 20, 18, 20].map(function (w) { return { wch: w }; });
+    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "출금신청");
+    XLSX.writeFile(wb, "출금신청_" + new Date().toLocaleDateString("sv-SE") + (filter !== "all" ? "_" + filter : "") + ".xlsx");
+  });
+
+  /* ---------- 관리자 계정 ---------- */
+  function loadAdmins() {
+    $("#adList").innerHTML = '<p class="adm-note">불러오는 중…</p>';
+    api({ action: "ad.list" }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      $("#adList").innerHTML = r.admins.map(function (a) {
+        return '<div class="ad-row" data-id="' + esc(a.id) + '"><div><b>' + esc(a.name) + '</b><span class="role ' + esc(a.role) + '">' + (a.role === "master" ? "최고관리자" : "일반 관리자") + '</span><small>아이디 ' + esc(a.id) + " · 생성 " + esc(fmtD(a.createdAt)) + (a.lastLogin ? " · 마지막 로그인 " + esc(fmtD(a.lastLogin)) : "") + "</small></div>" +
+          (user.role === "master" && a.id !== "admin" && a.id !== user.id ? '<div class="act"><button type="button" data-act="del">삭제</button></div>' : "") + "</div>";
+      }).join("");
+    }).catch(function (ex) { $("#adList").innerHTML = '<p class="fm-error">' + esc(ex.message) + "</p>"; });
+  }
+  $("#adList").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var row = b.closest(".ad-row"), id = row.getAttribute("data-id");
+    if (b.textContent !== "정말 삭제?") { b.textContent = "정말 삭제?"; setTimeout(function () { b.textContent = "삭제"; }, 2500); return; }
+    b.disabled = true;
+    api({ action: "ad.delete", id: id }).then(function (r) { if (!r.ok) throw new Error(r.error); loadAdmins(); }).catch(function (ex) { alert(ex.message); b.disabled = false; });
+  });
+  $("#addForm").addEventListener("submit", function (e) {
+    e.preventDefault(); var er = $("#aErr"); er.hidden = true;
+    api({ action: "ad.add", id: $("#aId").value.trim(), name: $("#aName").value.trim(), pw: $("#aPw").value, role: $("#aRole").value })
+      .then(function (r) { if (!r.ok) throw new Error(r.error); $("#aId").value = $("#aName").value = $("#aPw").value = ""; loadAdmins(); })
+      .catch(function (ex) { er.textContent = ex.message; er.hidden = false; });
+  });
+  $("#pwForm").addEventListener("submit", function (e) {
+    e.preventDefault(); var er = $("#pErr"), ok = $("#pOk"); er.hidden = true; ok.hidden = true;
+    if ($("#pNew").value !== $("#pNew2").value) { er.textContent = "새 비밀번호 확인이 일치하지 않아요"; er.hidden = false; return; }
+    api({ action: "ad.pw", oldPw: $("#pOld").value, newPw: $("#pNew").value })
+      .then(function (r) { if (!r.ok) throw new Error(r.error); ok.hidden = false; $("#pOld").value = $("#pNew").value = $("#pNew2").value = ""; })
+      .catch(function (ex) { er.textContent = ex.message; er.hidden = false; });
+  });
+})();
+</script>
+</body>
+</html>

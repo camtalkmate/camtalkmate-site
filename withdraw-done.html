@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>출금 신청 완료 | 캠톡메이트</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFF9F7">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/icon-32.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/form.css">
+<script src="assets/js/config.js"></script>
+<script src="assets/js/tracking.js"></script>
+</head>
+<body class="page-form">
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="홈으로"><span class="logo-mark" aria-hidden="true">M</span><span><span data-text="brand.name">캠톡메이트</span><small data-text="brand.agencyLabel">캠톡 공식 에이전시</small></span></a>
+  </div>
+</header>
+<main class="wrap fm fm--done">
+  <div class="fbox fm-done">
+    <div class="fm-done-icon"><svg><use href="#i-check"/></svg></div>
+    <h1>출금 신청이 <span class="grad">접수됐어요</span></h1>
+    <p>담당자가 내용을 확인한 뒤 송금해요.<br>낮 시간은 30분 이내, 심야 신청분은 오전 9시에 일괄 송금돼요.</p>
+    <dl class="fm-done-info" id="info" hidden>
+      <div><dt>접수번호</dt><dd id="dId"></dd></div>
+      <div><dt>닉네임</dt><dd id="dNick"></dd></div>
+      <div><dt>신청 금액</dt><dd id="dAmt" class="grad"></dd></div>
+      <div><dt>입금 은행</dt><dd id="dBank"></dd></div>
+    </dl>
+    <div class="btn-row" style="justify-content:center">
+      <a class="btn btn--kakao" data-href="kakao"><svg><use href="#i-kakao"/></svg>문의는 카톡으로</a>
+      <a class="btn btn--ghost" href="./">홈으로</a>
+    </div>
+  </div>
+</main>
+<script src="assets/js/content.js"></script>
+<script src="assets/js/site.js"></script>
+<script>
+(function () {
+  try {
+    var d = JSON.parse(sessionStorage.getItem("wd_done") || "null");
+    if (!d) return;
+    document.getElementById("dId").textContent = d.id || "-";
+    document.getElementById("dNick").textContent = d.nick || "-";
+    document.getElementById("dAmt").textContent = (d.amount || 0).toLocaleString("ko-KR") + "원";
+    document.getElementById("dBank").textContent = d.bank || "-";
+    document.getElementById("info").hidden = false;
+    if (window.gtag) gtag("event", "withdraw_done", { amount: d.amount });
+    sessionStorage.removeItem("wd_done");
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
