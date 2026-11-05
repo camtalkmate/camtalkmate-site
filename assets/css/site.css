@@ -865,3 +865,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
   .hpill--wd { display: inline-flex; }
   .site-header .wrap { gap: 10px; }
 }
+/* Netlify 배지가 있을 때: 하단 버튼바를 배지 위로 올리고, 배지는 바 아래 띠에 위치 */
+html.has-nl-badge .mcta { padding-bottom: calc(10px + 64px + env(safe-area-inset-bottom, 0px)); }
+html.has-nl-badge .site-footer { padding-bottom: calc(56px + 84px + 64px); }
+@media (min-width: 761px) { html.has-nl-badge .site-footer { padding-bottom: calc(56px + 84px); } }

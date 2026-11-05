@@ -66,6 +66,13 @@
     a.href = url;
     if (/^https?:/.test(url)) { a.target = "_blank"; a.rel = "noopener"; }
   });
+  /* ---------- Netlify 무료 배지 감지 → 하단 버튼바를 배지 위로 ---------- */
+  (function () {
+    function check() { if (document.getElementById("nl-badge-frame")) { document.documentElement.classList.add("has-nl-badge"); return true; } return false; }
+    if (check()) return;
+    var n = 0, t = setInterval(function () { if (check() || ++n > 20) clearInterval(t); }, 500);
+  })();
+
   /* ---------- 상담 채널 선택창 ---------- */
   (function () {
     var chans = [
