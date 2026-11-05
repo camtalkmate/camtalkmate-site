@@ -1,7 +1,7 @@
 # 글 관리자 페이지(/admin) 설정 — Decap CMS
 backend:
   name: github
-  repo: GITHUB아이디/camtalkmate     # ★ 사장님 GitHub 아이디/저장소 이름으로 바꿔야 함
+  repo: camtalkmate/camtalkmate-site
   branch: main
   base_url: https://api.netlify.com   # Netlify가 GitHub 로그인을 대신 처리
   commit_messages:
