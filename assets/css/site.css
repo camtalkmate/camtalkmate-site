@@ -503,7 +503,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
 
 /* ---------- footer ---------- */
-.site-footer { padding-block: 56px calc(56px + 84px); font-size: var(--t-xs); color: var(--ink-3); background: #FBEFF2; }
+.site-footer { padding-block: 56px; font-size: var(--t-xs); color: var(--ink-3); background: #FBEFF2; }
 .site-footer .wrap { display: grid; gap: 20px; }
 .foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: center; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
@@ -514,9 +514,6 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 @media (min-width: 761px) { .site-footer { padding-bottom: 56px; } }
 
 /* ---------- mobile CTA ---------- */
-.mcta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 55; display: none; gap: 8px; padding: 10px var(--gutter-r) calc(10px + env(safe-area-inset-bottom, 0px)) var(--gutter-l); background: rgba(255,249,247,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 -10px 30px -18px rgba(120,40,70,.35); }
-.mcta .btn { flex: 1; min-height: 52px; padding: 0 12px; }
-@media (max-width: 760px) { .mcta { display: flex; } }
 .toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; padding: 12px 20px; border-radius: 999px; background: var(--ink); color: #fff; font-size: var(--t-s); font-weight: 600; box-shadow: var(--shadow); }
 
 /* ---------- 캠톡 소개 ---------- */
@@ -866,6 +863,4 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
   .site-header .wrap { gap: 10px; }
 }
 /* Netlify 배지가 있을 때: 하단 버튼바를 배지 위로 올리고, 배지는 바 아래 띠에 위치 */
-html.has-nl-badge .mcta { padding-bottom: calc(10px + 64px + env(safe-area-inset-bottom, 0px)); }
-html.has-nl-badge .site-footer { padding-bottom: calc(56px + 84px + 64px); }
-@media (min-width: 761px) { html.has-nl-badge .site-footer { padding-bottom: calc(56px + 84px); } }
+html.has-nl-badge .site-footer { padding-bottom: calc(56px + 64px); }

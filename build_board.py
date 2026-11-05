@@ -162,10 +162,6 @@ def page_shell(title, desc, canonical, body, extra_head="", depth=2):
     <p>© <span data-year>2026</span> <span data-text="brand.name">{BRAND}</span>. All rights reserved.</p>
   </div>
 </footer>
-<div class="mcta">
-  <a class="btn btn--primary" data-href="invite">바로 시작하기</a>
-  <a class="btn btn--kakao" data-href="kakao"><svg><use href="#i-kakao"/></svg>카톡 상담하기</a>
-</div>
 <script src="{up}assets/js/content.js"></script>
 <script src="{up}assets/js/site.js"></script>
 </body>
