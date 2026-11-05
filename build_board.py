@@ -286,5 +286,23 @@ def build():
     print("완료: 글 %d편" % len(posts))
     for p in posts: print("  -", p["date"], p["title"], "(%d자)" % p["chars"])
 
+def stamp_assets():
+    """CSS·JS 파일 내용이 바뀌면 주소 끝의 ?v= 값이 자동으로 바뀌어, 방문자 브라우저가 새 파일을 받게 함"""
+    import hashlib
+    ver = {}
+    for f in glob.glob(os.path.join(ROOT, "assets", "css", "*.css")) + glob.glob(os.path.join(ROOT, "assets", "js", "*.js")):
+        rel = os.path.relpath(f, ROOT).replace(os.sep, "/")
+        ver[rel] = hashlib.md5(open(f, "rb").read()).hexdigest()[:8]
+    pat = re.compile(r'((?:\.\./)*)(assets/(?:css|js)/[\w.-]+\.(?:css|js))(\?v=[\w]+)?"')
+    n = 0
+    for f in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
+        if os.sep + "lp" + os.sep in f: continue
+        src = open(f, encoding="utf-8").read()
+        out = pat.sub(lambda m: m.group(1) + m.group(2) + ("?v=" + ver[m.group(2)] if m.group(2) in ver else (m.group(3) or "")) + '"', src)
+        if out != src:
+            open(f, "w", encoding="utf-8").write(out); n += 1
+    print("자산 버전 표시: 파일 %d개" % n)
+
 if __name__ == "__main__":
     build()
+    stamp_assets()
