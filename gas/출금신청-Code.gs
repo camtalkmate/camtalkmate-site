@@ -1,5 +1,5 @@
 /* =====================================================================
-   캠톡메이트 관리자 서버 스크립트 v2 (Google Apps Script)
+   캠톡메이트 관리자 서버 스크립트 v3 (Google Apps Script)
    - 관리자 계정(아이디/비밀번호) 로그인, 계정 추가·삭제·비밀번호 변경
    - 출금신청 접수·관리
    ---------------------------------------------------------------------
@@ -10,6 +10,9 @@
 var SECRET_KEY     = "바꿔주세요-암호화키-아무문장";   // ★ 암호화 키. 한 번 정하면 절대 바꾸지 마세요(바꾸면 기존 데이터 해독 불가)
 var INIT_PASSWORD  = "바꿔주세요-최초비밀번호";       // ★ 최고관리자(admin) 최초 비밀번호. 첫 실행 때 계정이 만들어지고, 이후엔 관리자 페이지에서 변경
 var NOTIFY_EMAIL   = "";                              // 새 출금신청이 오면 알림받을 이메일 (비우면 알림 없음)
+
+/* GitHub 연동 (게시판 글쓰기·사이트 설정). 토큰은 코드가 아니라 "프로젝트 설정 → 스크립트 속성"에 GITHUB_TOKEN 으로 저장 */
+var GH_OWNER = "camtalkmate", GH_REPO = "camtalkmate-site", GH_BRANCH = "main";
 
 var MASTER_ID = "admin";
 var TOKEN_HOURS = 12;          // 로그인 유지 시간
@@ -164,6 +167,14 @@ function doPost(e) {
       case "ad.add":     return addAdmin(b, me);
       case "ad.delete":  return deleteAdmin(b, me);
       case "ad.pw":      return changePw(b, me);
+      case "post.list":  return postList();
+      case "post.get":   return postGet(b);
+      case "post.save":  return postSave(b, me);
+      case "post.delete":return postDelete(b, me);
+      case "img.upload": return imgUpload(b);
+      case "set.get":    return settingsGet();
+      case "set.save":   return settingsSave(b, me);
+      case "gh.status":  return ghStatus();
     }
     return err("알 수 없는 요청");
   } catch (x) {
@@ -242,4 +253,127 @@ function wdDelete(b, me) {
   var r = wdRow(b.id); if (!r) return err("항목을 찾을 수 없습니다");
   getSheet(WD_SHEET, WD_HEADERS).deleteRow(r);
   return out({ ok: true });
+}
+
+/* ---------- GitHub 연동 ---------- */
+function ghToken() { return PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN") || ""; }
+function gh(method, path, payload) {
+  var tok = ghToken(); if (!tok) throw new Error("GitHub 토큰이 아직 등록되지 않았습니다 (스크립트 속성 GITHUB_TOKEN)");
+  var opt = { method: method, muteHttpExceptions: true, headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" } };
+  if (payload) { opt.contentType = "application/json"; opt.payload = JSON.stringify(payload); }
+  var res = UrlFetchApp.fetch("https://api.github.com" + path, opt), code = res.getResponseCode(), txt = res.getContentText();
+  var json = null; try { json = JSON.parse(txt); } catch (e) {}
+  if (code >= 300) throw new Error("GitHub 오류 " + code + ": " + ((json && json.message) || txt).slice(0, 200));
+  return json;
+}
+function ghGetFile(path) { // {content(utf8), sha} or null
+  try {
+    var j = gh("get", "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + encodeURI(path) + "?ref=" + GH_BRANCH);
+    return { content: Utilities.newBlob(Utilities.base64Decode(String(j.content).replace(/\n/g, ""))).getDataAsString("UTF-8"), sha: j.sha };
+  } catch (e) { if (String(e).indexOf("404") >= 0) return null; throw e; }
+}
+function ghPutFile(path, content, message, sha, isBase64) {
+  var body = { message: message, branch: GH_BRANCH, content: isBase64 ? content : Utilities.base64Encode(content, Utilities.Charset.UTF_8) };
+  if (sha) body.sha = sha;
+  return gh("put", "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + encodeURI(path), body);
+}
+function ghStatus() {
+  try { var j = gh("get", "/repos/" + GH_OWNER + "/" + GH_REPO); return out({ ok: true, repo: j.full_name, connected: true }); }
+  catch (e) { return out({ ok: true, connected: false, error: String(e.message || e) }); }
+}
+
+/* ---------- 게시판 글 ---------- */
+function parseMd(src) {
+  var m = src.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/), meta = {}, body = src;
+  if (m) {
+    body = m[2];
+    m[1].split("\n").forEach(function (ln) {
+      var i = ln.indexOf(":"); if (i < 0) return;
+      var k = ln.slice(0, i).trim(), v = ln.slice(i + 1).trim();
+      if (v.length >= 2 && v[0] === v[v.length - 1] && (v[0] === '"' || v[0] === "'")) v = v.slice(1, -1).replace(/\\"/g, '"');
+      meta[k] = v;
+    });
+  }
+  return { meta: meta, body: body };
+}
+function q(v) { return '"' + String(v || "").replace(/"/g, '\\"') + '"'; }
+function buildMd(b) {
+  var fm = ["---", "title: " + q(b.title), "date: " + String(b.date || "").slice(0, 10), "description: " + q(b.description), "keywords: " + q(b.keywords)];
+  if (b.image) fm.push("image: " + q(b.image));
+  if (b.draft) fm.push("draft: true");
+  fm.push("---", "");
+  return fm.join("\n") + String(b.body || "").replace(/\r\n/g, "\n").trim() + "\n";
+}
+function postList() {
+  var files = gh("get", "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/board/_posts?ref=" + GH_BRANCH);
+  var posts = [];
+  files.forEach(function (f) {
+    if (!/\.md$/.test(f.name)) return;
+    var slug = f.name.replace(/\.md$/, "");
+    var fc = ghGetFile("board/_posts/" + f.name), p = parseMd(fc.content);
+    posts.push({ slug: slug, title: p.meta.title || slug, date: String(p.meta.date || "").slice(0, 10), draft: /^(true|yes|1)$/i.test(p.meta.draft || ""), description: p.meta.description || "", image: p.meta.image || "", chars: p.body.replace(/\s/g, "").length });
+  });
+  posts.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+  return out({ ok: true, posts: posts });
+}
+function postGet(b) {
+  var slug = String(b.slug || "").replace(/[^a-z0-9\-]/g, ""); if (!slug) return err("주소(slug)가 없습니다");
+  var fc = ghGetFile("board/_posts/" + slug + ".md"); if (!fc) return err("글을 찾을 수 없습니다");
+  var p = parseMd(fc.content);
+  return out({ ok: true, post: { slug: slug, title: p.meta.title || "", date: String(p.meta.date || "").slice(0, 10), description: p.meta.description || "", keywords: p.meta.keywords || "", image: p.meta.image || "", draft: /^(true|yes|1)$/i.test(p.meta.draft || ""), body: p.body.replace(/^\n+/, "") }, sha: fc.sha });
+}
+function postSave(b, me) {
+  var slug = String(b.slug || "").toLowerCase().replace(/[^a-z0-9\-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  if (!slug) slug = "post-" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMdd-HHmm");
+  if (!String(b.title || "").trim()) return err("제목을 입력해 주세요");
+  if (!String(b.body || "").trim()) return err("본문을 입력해 주세요");
+  if (!b.date) b.date = Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd");
+  var path = "board/_posts/" + slug + ".md", cur = ghGetFile(path);
+  if (cur && !b.overwrite && !b.sha) return err("같은 주소의 글이 이미 있습니다: " + slug);
+  var md = buildMd(b);
+  ghPutFile(path, md, (cur ? "글 수정: " : "글 작성: ") + b.title + " (" + me.id + ")", cur ? cur.sha : null);
+  return out({ ok: true, slug: slug, url: "/board/posts/" + slug + ".html" });
+}
+function postDelete(b, me) {
+  if (me.role !== "master") return err("최고관리자만 글을 삭제할 수 있습니다");
+  var slug = String(b.slug || "").replace(/[^a-z0-9\-]/g, ""), path = "board/_posts/" + slug + ".md", cur = ghGetFile(path);
+  if (!cur) return err("글을 찾을 수 없습니다");
+  gh("delete", "/repos/" + GH_OWNER + "/" + GH_REPO + "/contents/" + encodeURI(path), { message: "글 삭제: " + slug + " (" + me.id + ")", branch: GH_BRANCH, sha: cur.sha });
+  return out({ ok: true });
+}
+function imgUpload(b) {
+  var name = String(b.name || "image").toLowerCase().replace(/[^a-z0-9.\-_]/g, "-"), ext = (name.match(/\.(jpe?g|png|webp|gif)$/) || [".jpg"])[0];
+  if (!/^(jpe?g|png|webp|gif)$/.test(ext.slice(1))) return err("이미지 파일(jpg, png, webp, gif)만 올릴 수 있어요");
+  var data = String(b.base64 || "").replace(/^data:[^,]*,/, "");
+  if (!data) return err("이미지 데이터가 없습니다");
+  if (data.length > 6 * 1024 * 1024) return err("이미지는 4MB 이하로 올려 주세요");
+  var fname = Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMdd-HHmmss") + "-" + name.replace(/\.[^.]+$/, "").slice(0, 40) + ext;
+  var path = "assets/img/uploads/" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMM") + "/" + fname;
+  ghPutFile(path, data, "이미지 업로드: " + fname, null, true);
+  return out({ ok: true, path: "/" + path });
+}
+
+/* ---------- 사이트 설정 (config.js) ---------- */
+var SET_KEYS = ["contact.kakaoUrl", "contact.kakaoId", "contact.lineUrl", "contact.lineId", "contact.telegramUrl", "contact.telegramId", "contact.phone", "contact.hours", "contact.inviteUrl", "agencyCode",
+                "tracking.GTM_ID", "tracking.GA4_ID", "tracking.META_PIXEL_ID", "tracking.NAVER_SITE_VERIFY", "tracking.GOOGLE_SITE_VERIFY", "company.email"];
+function setRe(key) { var k = key.split(".").pop(); return new RegExp("(^\\s*" + k + "\\s*:\\s*)\"((?:[^\"\\\\]|\\\\.)*)\"", "m"); }
+function settingsGet() {
+  var fc = ghGetFile("assets/js/config.js"); if (!fc) return err("config.js 를 찾을 수 없습니다");
+  var vals = {};
+  SET_KEYS.forEach(function (k) { var m = fc.content.match(setRe(k)); vals[k] = m ? m[2].replace(/\\"/g, '"') : ""; });
+  return out({ ok: true, values: vals });
+}
+function settingsSave(b, me) {
+  if (me.role !== "master") return err("최고관리자만 사이트 설정을 바꿀 수 있습니다");
+  var fc = ghGetFile("assets/js/config.js"); if (!fc) return err("config.js 를 찾을 수 없습니다");
+  var src = fc.content, changed = [];
+  SET_KEYS.forEach(function (k) {
+    if (!(k in (b.values || {}))) return;
+    var v = String(b.values[k] || "").replace(/"/g, '\\"').replace(/[\r\n]/g, " ");
+    var re = setRe(k); if (!re.test(src)) return;
+    var before = src; src = src.replace(re, "$1\"" + v + "\""); if (src !== before) changed.push(k);
+  });
+  if (!changed.length) return out({ ok: true, changed: [] });
+  ghPutFile("assets/js/config.js", src, "사이트 설정 변경: " + changed.join(", ") + " (" + me.id + ")", fc.sha);
+  return out({ ok: true, changed: changed });
 }

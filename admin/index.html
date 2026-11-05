@@ -40,6 +40,23 @@
   .adm-side .who { grid-column: 1 / -1; }
   .adm-side a { padding: 11px 12px; }
 }
+.tbl--posts { min-width: 760px; }
+.tbl--posts td.ttl { white-space: normal; min-width: 280px; font-weight: 700; }
+.post-edit { display: grid; gap: 18px; }
+.post-edit .fbox { gap: 16px; }
+.post-edit textarea { width: 100%; padding: 12px 16px; border-radius: 16px; border: 0; background: #FFF6F8; color: var(--ink); font: 500 var(--t-m)/1.7 var(--f-body); box-shadow: 0 0 0 1.5px var(--line) inset; resize: vertical; }
+.post-edit textarea:focus { outline: 0; background: #fff; box-shadow: 0 0 0 2px var(--rose) inset; }
+#pBody { font-family: var(--f-body); line-height: 1.8; }
+.ed-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ed-bar button { min-height: 34px; padding: 0 12px; border-radius: 10px; border: 0; background: var(--surface); color: var(--ink); font: 600 .8rem var(--f-body); cursor: pointer; box-shadow: 0 0 0 1px var(--line) inset; }
+.ed-bar button:hover { background: var(--rose-soft); color: var(--rose-2); }
+.ed-bar .ed-sp { flex: 1; }
+.md-preview { padding: 20px 24px; border-radius: 16px; background: var(--surface); box-shadow: 0 0 0 1px var(--line) inset; max-height: 560px; overflow: auto; }
+.md-preview img { max-width: 100%; border-radius: 12px; }
+.cover { display: grid; gap: 10px; }
+.cover img { width: 100%; max-width: 420px; aspect-ratio: 1200/630; object-fit: cover; border-radius: 14px; box-shadow: var(--vol); }
+.cover-act { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.st--임시 { background: #EEF0FF; color: #3B4AA6; } .st--발행 { background: #E6F8EF; color: #1F6B45; }
 </style>
 </head>
 <body class="page-form">
@@ -104,13 +121,48 @@
 
     <!-- 게시판 -->
     <section class="view" id="v-board" hidden>
-      <div class="adm-top"><h1>게시판 <span class="grad">글 관리</span></h1></div>
-      <div class="link-card">
-        <h3>글쓰기 · 수정 · 삭제</h3>
-        <p>게시판 글은 사이트 파일 창고(GitHub)에 저장되기 때문에 글 편집기는 별도 창에서 열립니다. 처음 한 번만 "Login with GitHub"를 누르면 그 다음부터는 바로 열려요. 글을 쓰고 <strong>발행</strong>을 누르면 1~2분 뒤 사이트에 반영됩니다.</p>
-        <div class="btn-row"><a class="btn btn--primary" href="board/" target="_blank" rel="noopener">글 편집기 열기</a><a class="btn btn--ghost" href="../board/" target="_blank" rel="noopener">게시판 보기</a></div>
-        <p class="adm-note">사이트가 GitHub·Netlify에 연결되기 전에는 편집기가 동작하지 않습니다. (배포-안내서 4단계)</p>
+      <div id="postList">
+        <div class="adm-top">
+          <h1>게시판 <span class="grad">글 관리</span></h1>
+          <button class="btn btn--ghost btn--sm" id="postRefresh" type="button">새로고침</button>
+          <button class="btn btn--primary btn--sm" id="postNew" type="button">+ 새 글 쓰기</button>
+        </div>
+        <p class="fm-error" id="ghWarn" hidden></p>
+        <div class="tbl-wrap"><table class="tbl tbl--posts"><thead><tr><th>날짜</th><th>제목</th><th>상태</th><th>글자수</th><th>처리</th></tr></thead><tbody id="postTb"></tbody></table><div class="adm-empty" id="postEmpty" hidden>아직 글이 없어요. "새 글 쓰기"를 눌러 시작하세요.</div></div>
+        <p class="adm-note">· 발행하면 1~2분 뒤 사이트 게시판에 자동으로 올라가고, 네이버·구글용 사이트맵도 같이 갱신됩니다. · "임시"는 사이트에 안 보이는 글입니다. · 고급: <a href="board/" target="_blank" rel="noopener">GitHub 편집기</a>로도 편집할 수 있어요.</p>
       </div>
+      <form id="postEdit" hidden class="post-edit">
+        <div class="adm-top">
+          <h1 id="peTitle">새 글 쓰기</h1>
+          <button class="btn btn--ghost btn--sm" type="button" id="peBack">← 목록</button>
+        </div>
+        <div class="fbox">
+          <div class="fm-field"><label for="pTitle">제목 <i>*</i></label><input id="pTitle" type="text" placeholder="검색에 잡히는 제목 (예: 캠톡 수익 계산법, 1분 900원이 한 달에?)" maxlength="80" required></div>
+          <div class="grid2">
+            <div class="fm-field"><label for="pDate">날짜</label><input id="pDate" type="date"></div>
+            <div class="fm-field"><label for="pSlug">글 주소 (영문)</label><input id="pSlug" type="text" placeholder="비워두면 자동 생성 · 예: camtalk-income-tips" pattern="[a-z0-9\-]*"><p class="fm-hint">사이트주소/board/posts/<b id="slugPrev">…</b>.html</p></div>
+          </div>
+          <div class="fm-field"><label for="pDesc">요약 (검색결과에 보이는 설명, 150자 내외)</label><textarea id="pDesc" rows="2" maxlength="200"></textarea></div>
+          <div class="fm-field"><label for="pKw">키워드 (쉼표로 구분)</label><input id="pKw" type="text" placeholder="캠톡, 캠톡커, 재택 부업"></div>
+          <div class="fm-field"><label>대표 이미지 (목록 썸네일 · 카톡/검색 공유 썸네일)</label>
+            <div class="cover"><img id="pCoverImg" alt="" hidden><div class="cover-act"><input type="file" id="pCoverFile" accept="image/*" hidden><button type="button" class="btn btn--ghost btn--sm" id="pCoverBtn">사진 올리기</button><button type="button" class="btn btn--ghost btn--sm" id="pCoverDel" hidden>삭제</button><span class="fm-hint" id="pCoverPath"></span></div></div>
+          </div>
+          <div class="fm-field">
+            <label for="pBody">본문 <i>*</i></label>
+            <div class="ed-bar">
+              <button type="button" data-md="h2" title="소제목">소제목</button><button type="button" data-md="b" title="굵게"><b>굵게</b></button><button type="button" data-md="ul">• 목록</button><button type="button" data-md="ol">1. 번호</button><button type="button" data-md="quote">인용</button><button type="button" data-md="link">링크</button><button type="button" id="pImgBtn">🖼 사진 넣기</button><input type="file" id="pImgFile" accept="image/*" hidden>
+              <span class="ed-sp"></span><button type="button" id="pPreviewBtn">미리보기</button>
+            </div>
+            <textarea id="pBody" rows="18" placeholder="여기에 글을 쓰세요. 엔터 두 번이면 문단이 나뉘어요.&#10;&#10;## 소제목&#10;**굵게**  - 목록"></textarea>
+            <div id="pPreview" class="post-body md-preview" hidden></div>
+            <p class="fm-hint">검색 노출을 위해 본문 1,000자 이상, 소제목 3개 이상, 사진 1장 이상을 권해요. <span id="pCount">0자</span></p>
+          </div>
+          <label class="fm-check" style="padding:0"><input type="checkbox" id="pDraft"><span><strong>임시 저장 (사이트에 안 보임)</strong><small>체크를 풀고 저장하면 발행됩니다</small></span></label>
+          <p class="fm-error" id="pErr" hidden></p>
+          <p class="ok-msg" id="pOk" hidden></p>
+          <div class="btn-row"><button class="btn btn--primary" type="submit" id="pSave">발행하기</button><button class="btn btn--ghost" type="button" id="pDelete" hidden>삭제</button></div>
+        </div>
+      </form>
     </section>
 
     <!-- 관리자 계정 -->
@@ -141,12 +193,34 @@
 
     <!-- 설정 -->
     <section class="view" id="v-settings" hidden>
-      <div class="adm-top"><h1>사이트 <span class="grad">설정</span></h1></div>
-      <div class="link-card">
-        <h3>카톡 링크 · 연락처 · 안내 문구</h3>
-        <p>사이트에 표시되는 연락처와 문구는 <code>assets/js/config.js</code> 파일에 모여 있습니다. 사이트가 GitHub에 연결되면 이 화면에서 바로 고칠 수 있도록 준비 중이에요. 그 전에는 담당자(Claude)에게 바꿀 값을 알려주시면 반영해 드립니다.</p>
-        <p class="adm-note">준비 중 · 2단계(GitHub 연결) 이후 제공</p>
-      </div>
+      <div class="adm-top"><h1>사이트 <span class="grad">설정</span></h1><button class="btn btn--ghost btn--sm" id="setReload" type="button">다시 불러오기</button></div>
+      <form class="fbox" id="setForm">
+        <h2 class="fm-h2">상담 연락처 <small>비우면 그 채널 버튼은 사이트에서 숨겨져요</small></h2>
+        <div class="grid2">
+          <div class="fm-field"><label>카카오톡 링크</label><input data-k="contact.kakaoUrl" type="url" placeholder="https://open.kakao.com/o/…"></div>
+          <div class="fm-field"><label>카카오톡 ID (화면 표시)</label><input data-k="contact.kakaoId" type="text"></div>
+          <div class="fm-field"><label>라인 링크</label><input data-k="contact.lineUrl" type="url" placeholder="https://line.me/ti/p/…"></div>
+          <div class="fm-field"><label>라인 ID</label><input data-k="contact.lineId" type="text"></div>
+          <div class="fm-field"><label>텔레그램 링크</label><input data-k="contact.telegramUrl" type="url" placeholder="https://t.me/…"></div>
+          <div class="fm-field"><label>텔레그램 ID</label><input data-k="contact.telegramId" type="text"></div>
+          <div class="fm-field"><label>전화번호 (비우면 숨김)</label><input data-k="contact.phone" type="tel" placeholder="010-0000-0000"></div>
+          <div class="fm-field"><label>상담 시간 문구</label><input data-k="contact.hours" type="text"></div>
+          <div class="fm-field"><label>캠톡 초대 링크 ("바로 시작하기")</label><input data-k="contact.inviteUrl" type="url"></div>
+          <div class="fm-field"><label>에이전시 코드</label><input data-k="agencyCode" type="text"></div>
+          <div class="fm-field"><label>회사 이메일 (푸터)</label><input data-k="company.email" type="email"></div>
+        </div>
+        <h2 class="fm-h2">추적 · 검색 등록 <small>발급받은 값만 넣으면 자동으로 켜져요</small></h2>
+        <div class="grid2">
+          <div class="fm-field"><label>구글 애널리틱스 GA4 ID</label><input data-k="tracking.GA4_ID" type="text" placeholder="G-XXXXXXXXXX"></div>
+          <div class="fm-field"><label>구글 태그 매니저 ID</label><input data-k="tracking.GTM_ID" type="text" placeholder="GTM-XXXXXXX"></div>
+          <div class="fm-field"><label>메타 픽셀 ID</label><input data-k="tracking.META_PIXEL_ID" type="text"></div>
+          <div class="fm-field"><label>네이버 서치어드바이저 확인값</label><input data-k="tracking.NAVER_SITE_VERIFY" type="text"></div>
+          <div class="fm-field"><label>구글 서치콘솔 확인값</label><input data-k="tracking.GOOGLE_SITE_VERIFY" type="text"></div>
+        </div>
+        <p class="fm-error" id="setErr" hidden></p>
+        <p class="ok-msg" id="setOk" hidden></p>
+        <button class="btn btn--primary" type="submit" id="setSave">저장 (1~2분 뒤 사이트 반영)</button>
+      </form>
     </section>
   </div>
 </main>
@@ -204,6 +278,8 @@
     $$(".adm-side a").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-view") === v); });
     if (v === "withdraw" && !rows.length) loadWd();
     if (v === "admins") loadAdmins();
+    if (v === "board") loadPosts();
+    if (v === "settings") loadSettings();
   }
   window.addEventListener("hashchange", function () { if (token) show(location.hash.slice(1)); });
 
@@ -288,6 +364,170 @@
     var ws = XLSX.utils.json_to_sheet(data); ws["!cols"] = [12, 18, 8, 14, 14, 11, 10, 18, 10, 16, 20, 18, 20].map(function (w) { return { wch: w }; });
     var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "출금신청");
     XLSX.writeFile(wb, "출금신청_" + new Date().toLocaleDateString("sv-SE") + (filter !== "all" ? "_" + filter : "") + ".xlsx");
+  });
+
+
+  /* ---------- 게시판 글 ---------- */
+  var posts = [], editing = null, editSha = null;
+  function fmtK(n) { return (+n || 0).toLocaleString("ko-KR"); }
+  function loadPosts() {
+    $("#postTb").innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-3)">불러오는 중…</td></tr>';
+    api({ action: "post.list" }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      posts = r.posts || []; $("#ghWarn").hidden = true; renderPosts();
+    }).catch(function (ex) {
+      $("#postTb").innerHTML = ""; $("#postEmpty").hidden = true;
+      $("#ghWarn").textContent = /토큰/.test(ex.message) ? "GitHub 연결이 아직 안 됐어요. 담당자(Claude)에게 'GitHub 토큰 등록' 단계를 요청하세요. (" + ex.message + ")" : ex.message; $("#ghWarn").hidden = false;
+    });
+  }
+  function renderPosts() {
+    $("#postEmpty").hidden = posts.length > 0;
+    $("#postTb").innerHTML = posts.map(function (p) {
+      return '<tr data-slug="' + esc(p.slug) + '"><td class="mono">' + esc(p.date) + '</td><td class="ttl">' + esc(p.title) + '<br><small style="color:var(--ink-3);font-weight:500">' + esc(p.slug) + '</small></td>' +
+        '<td><span class="st st--' + (p.draft ? "임시" : "발행") + '">' + (p.draft ? "임시" : "발행됨") + '</span></td><td class="num">' + fmtK(p.chars) + '</td>' +
+        '<td><div class="act"><button type="button" class="ok" data-act="edit">수정</button>' + (p.draft ? "" : '<a class="btn--copy" href="../board/posts/' + esc(p.slug) + '.html" target="_blank" rel="noopener" style="text-decoration:none">보기</a>') + '</div></td></tr>';
+    }).join("");
+  }
+  $("#postRefresh").addEventListener("click", loadPosts);
+  $("#postTb").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-act=edit]"); if (!b) return;
+    openEditor(b.closest("tr").getAttribute("data-slug"));
+  });
+  function slugify(t) { return String(t || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 60); }
+  function autoSlug() { var v = $("#pSlug").value.trim(); $("#slugPrev").textContent = v || slugify($("#pTitle").value) || ("post-" + new Date().toISOString().slice(0, 10).replace(/-/g, "")); }
+  $("#pTitle").addEventListener("input", autoSlug); $("#pSlug").addEventListener("input", function () { this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"); autoSlug(); });
+  $("#pBody").addEventListener("input", function () { $("#pCount").textContent = this.value.replace(/\s/g, "").length.toLocaleString("ko-KR") + "자"; });
+  function openEditor(slug) {
+    $("#postList").hidden = true; $("#postEdit").hidden = false; $("#pErr").hidden = true; $("#pOk").hidden = true; $("#pPreview").hidden = true; $("#pPreviewBtn").textContent = "미리보기";
+    editing = slug || null; editSha = null;
+    $("#peTitle").textContent = slug ? "글 수정" : "새 글 쓰기"; $("#pDelete").hidden = !slug || user.role !== "master";
+    $("#pSlug").disabled = !!slug;
+    if (!slug) {
+      $("#pTitle").value = ""; $("#pDate").value = new Date().toLocaleDateString("sv-SE"); $("#pSlug").value = ""; $("#pDesc").value = ""; $("#pKw").value = ""; $("#pBody").value = ""; $("#pDraft").checked = false; setCover(""); autoSlug(); $("#pCount").textContent = "0자";
+      window.scrollTo(0, 0); return;
+    }
+    $("#pTitle").value = "불러오는 중…";
+    api({ action: "post.get", slug: slug }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      var p = r.post; editSha = r.sha;
+      $("#pTitle").value = p.title; $("#pDate").value = p.date; $("#pSlug").value = p.slug; $("#pDesc").value = p.description; $("#pKw").value = p.keywords; $("#pBody").value = p.body; $("#pDraft").checked = !!p.draft; setCover(p.image); autoSlug();
+      $("#pCount").textContent = p.body.replace(/\s/g, "").length.toLocaleString("ko-KR") + "자"; window.scrollTo(0, 0);
+    }).catch(function (ex) { $("#pErr").textContent = ex.message; $("#pErr").hidden = false; });
+  }
+  $("#postNew").addEventListener("click", function () { openEditor(null); });
+  $("#peBack").addEventListener("click", function () { $("#postEdit").hidden = true; $("#postList").hidden = false; if (!posts.length) loadPosts(); });
+  function setCover(path) {
+    $("#pCoverPath").textContent = path || ""; $("#pCoverImg").hidden = !path; $("#pCoverDel").hidden = !path;
+    if (path) $("#pCoverImg").src = /^https?:/.test(path) ? path : ".." + path;
+  }
+  function readFile(file) {
+    return new Promise(function (res, rej) {
+      if (file.size > 4 * 1024 * 1024) return rej(new Error("이미지는 4MB 이하로 올려 주세요 (휴대폰 사진은 '작게' 보내기 권장)"));
+      var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = function () { rej(new Error("파일을 읽지 못했어요")); }; fr.readAsDataURL(file);
+    });
+  }
+  function shrink(dataUrl, maxW) { // 큰 사진은 브라우저에서 줄여서 올림 (최대 1600px, jpg)
+    return new Promise(function (res) {
+      var img = new Image(); img.onload = function () {
+        var w = img.width, h = img.height; if (w <= maxW) return res(dataUrl);
+        var c = document.createElement("canvas"); c.width = maxW; c.height = Math.round(h * maxW / w); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL("image/jpeg", .86));
+      }; img.onerror = function () { res(dataUrl); }; img.src = dataUrl;
+    });
+  }
+  function upload(file, cb) {
+    readFile(file).then(function (d) { return shrink(d, 1600); }).then(function (d) {
+      var name = file.name.replace(/\.[^.]+$/, "") + (d.indexOf("data:image/jpeg") === 0 ? ".jpg" : "." + (file.name.split(".").pop() || "jpg"));
+      return api({ action: "img.upload", name: name, base64: d });
+    }).then(function (r) { if (!r.ok) throw new Error(r.error); cb(null, r.path); }).catch(function (ex) { cb(ex); });
+  }
+  $("#pCoverBtn").addEventListener("click", function () { $("#pCoverFile").click(); });
+  $("#pCoverFile").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return; $("#pCoverBtn").disabled = true; $("#pCoverBtn").textContent = "올리는 중…";
+    upload(f, function (ex, path) { $("#pCoverBtn").disabled = false; $("#pCoverBtn").textContent = "사진 올리기"; if (ex) { alert(ex.message); return; } setCover(path); });
+    this.value = "";
+  });
+  $("#pCoverDel").addEventListener("click", function () { setCover(""); });
+  $("#pImgBtn").addEventListener("click", function () { $("#pImgFile").click(); });
+  $("#pImgFile").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return; var ta = $("#pBody"), pos = ta.selectionStart; $("#pImgBtn").disabled = true; $("#pImgBtn").textContent = "올리는 중…";
+    upload(f, function (ex, path) {
+      $("#pImgBtn").disabled = false; $("#pImgBtn").textContent = "🖼 사진 넣기"; if (ex) { alert(ex.message); return; }
+      var ins = "\n\n![" + f.name.replace(/\.[^.]+$/, "") + "](" + path + ")\n*사진 설명을 여기에*\n\n";
+      ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(pos); ta.focus(); ta.selectionStart = ta.selectionEnd = pos + ins.length; ta.dispatchEvent(new Event("input"));
+    });
+    this.value = "";
+  });
+  function wrapSel(before, after, placeholder) {
+    var ta = $("#pBody"), s0 = ta.selectionStart, s1 = ta.selectionEnd, sel = ta.value.slice(s0, s1) || placeholder;
+    ta.value = ta.value.slice(0, s0) + before + sel + after + ta.value.slice(s1); ta.focus(); ta.selectionStart = s0 + before.length; ta.selectionEnd = s0 + before.length + sel.length; ta.dispatchEvent(new Event("input"));
+  }
+  $$(".ed-bar [data-md]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var k = b.getAttribute("data-md");
+      if (k === "h2") wrapSel("\n\n## ", "\n\n", "소제목"); else if (k === "b") wrapSel("**", "**", "강조할 말"); else if (k === "ul") wrapSel("\n- ", "\n", "항목"); else if (k === "ol") wrapSel("\n1. ", "\n", "첫 번째");
+      else if (k === "quote") wrapSel("\n> ", "\n", "인용할 말"); else if (k === "link") { var u = prompt("링크 주소를 입력하세요", "https://"); if (u) wrapSel("[", "](" + u + ")", "링크 글자"); }
+    });
+  });
+  function mdPreview(md) {
+    var h = esc(md);
+    h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (m, a, u) { return '<img src="' + (u.charAt(0) === "/" ? ".." + u : u) + '" alt="' + a + '">'; });
+    h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    h = h.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    h = h.split(/\n{2,}/).map(function (blk) {
+      blk = blk.trim(); if (!blk) return "";
+      var m;
+      if ((m = blk.match(/^(#{2,4})\s+(.*)$/))) return "<h" + m[1].length + ">" + m[2] + "</h" + m[1].length + ">";
+      if (/^(- |\* )/.test(blk)) return "<ul>" + blk.split("\n").map(function (l) { return "<li>" + l.replace(/^(- |\* )/, "") + "</li>"; }).join("") + "</ul>";
+      if (/^\d+\. /.test(blk)) return "<ol>" + blk.split("\n").map(function (l) { return "<li>" + l.replace(/^\d+\. /, "") + "</li>"; }).join("") + "</ol>";
+      if (/^&gt; /.test(blk)) return "<blockquote><p>" + blk.replace(/^&gt; /gm, "").replace(/\n/g, "<br>") + "</p></blockquote>";
+      if (/^<img/.test(blk)) return "<figure>" + blk.replace(/\n<em>(.*)<\/em>$/, "<figcaption>$1</figcaption>") + "</figure>";
+      return "<p>" + blk.replace(/\n/g, "<br>") + "</p>";
+    }).join("\n");
+    return h;
+  }
+  $("#pPreviewBtn").addEventListener("click", function () {
+    var pv = $("#pPreview"), show = pv.hidden; pv.hidden = !show; $("#pBody").hidden = show; this.textContent = show ? "편집으로" : "미리보기";
+    if (show) pv.innerHTML = mdPreview($("#pBody").value);
+  });
+  $("#postEdit").addEventListener("submit", function (e) {
+    e.preventDefault(); var er = $("#pErr"), ok = $("#pOk"); er.hidden = true; ok.hidden = true;
+    var draft = $("#pDraft").checked, btn = $("#pSave"); btn.disabled = true; btn.textContent = "저장 중…";
+    api({ action: "post.save", slug: editing || $("#pSlug").value.trim() || slugify($("#pTitle").value), sha: editSha, overwrite: !!editing,
+          title: $("#pTitle").value.trim(), date: $("#pDate").value, description: $("#pDesc").value.trim(), keywords: $("#pKw").value.trim(), image: $("#pCoverPath").textContent.trim(), draft: draft, body: $("#pBody").value })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.error);
+        editing = r.slug; $("#pSlug").value = r.slug; $("#pSlug").disabled = true; $("#pDelete").hidden = user.role !== "master";
+        ok.innerHTML = draft ? "임시 저장했어요. 사이트에는 보이지 않아요." : "발행했어요! 1~2분 뒤 사이트에 올라갑니다 → <a href=\"../board/posts/" + esc(r.slug) + ".html\" target=\"_blank\" rel=\"noopener\">글 보기</a>"; ok.hidden = false;
+        posts = []; window.scrollTo(0, 0);
+      }).catch(function (ex) { er.textContent = ex.message; er.hidden = false; })
+      .then(function () { btn.disabled = false; btn.textContent = "발행하기"; });
+  });
+  $("#pDraft").addEventListener("change", function () { $("#pSave").textContent = this.checked ? "임시 저장" : "발행하기"; });
+  $("#pDelete").addEventListener("click", function () {
+    var b = this; if (b.textContent !== "정말 삭제?") { b.textContent = "정말 삭제?"; setTimeout(function () { b.textContent = "삭제"; }, 2500); return; }
+    b.disabled = true;
+    api({ action: "post.delete", slug: editing }).then(function (r) { if (!r.ok) throw new Error(r.error); posts = []; $("#postEdit").hidden = true; $("#postList").hidden = false; loadPosts(); })
+      .catch(function (ex) { alert(ex.message); }).then(function () { b.disabled = false; b.textContent = "삭제"; });
+  });
+
+  /* ---------- 사이트 설정 ---------- */
+  function loadSettings() {
+    var er = $("#setErr"); er.hidden = true; $("#setOk").hidden = true;
+    api({ action: "set.get" }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      $$("#setForm [data-k]").forEach(function (i) { i.value = r.values[i.getAttribute("data-k")] || ""; });
+      $("#setSave").disabled = user.role !== "master";
+    }).catch(function (ex) { er.textContent = /토큰/.test(ex.message) ? "GitHub 연결이 아직 안 됐어요. (" + ex.message + ")" : ex.message; er.hidden = false; });
+  }
+  $("#setReload").addEventListener("click", loadSettings);
+  $("#setForm").addEventListener("submit", function (e) {
+    e.preventDefault(); var er = $("#setErr"), ok = $("#setOk"); er.hidden = true; ok.hidden = true; var btn = $("#setSave"); btn.disabled = true;
+    var values = {}; $$("#setForm [data-k]").forEach(function (i) { values[i.getAttribute("data-k")] = i.value.trim(); });
+    api({ action: "set.save", values: values }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      ok.textContent = r.changed.length ? "저장했어요. 1~2분 뒤 사이트에 반영됩니다." : "바뀐 내용이 없어요."; ok.hidden = false;
+    }).catch(function (ex) { er.textContent = ex.message; er.hidden = false; }).then(function () { btn.disabled = false; });
   });
 
   /* ---------- 관리자 계정 ---------- */
