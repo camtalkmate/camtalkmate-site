@@ -256,6 +256,8 @@ function wdDelete(b, me) {
 }
 
 /* ---------- GitHub 연동 ---------- */
+/* 최초 1회: 편집기에서 이 함수를 실행해 외부 접속 권한을 허용합니다 */
+function authorizeGithub() { var r = UrlFetchApp.fetch("https://api.github.com/repos/" + GH_OWNER + "/" + GH_REPO, { headers: { Authorization: "Bearer " + ghToken() }, muteHttpExceptions: true }); Logger.log(r.getResponseCode() + " " + r.getContentText().slice(0, 80)); }
 function ghToken() { return PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN") || ""; }
 function gh(method, path, payload) {
   var tok = ghToken(); if (!tok) throw new Error("GitHub 토큰이 아직 등록되지 않았습니다 (스크립트 속성 GITHUB_TOKEN)");
