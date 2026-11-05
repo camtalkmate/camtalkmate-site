@@ -825,7 +825,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 .nav-wd { background: var(--rose-soft); margin-left: 4px; }
 .wd-btn { justify-self: start; margin-top: 4px; }
 .step p a { color: var(--rose-2); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-@media (min-width: 1241px) and (max-width: 1420px) { .nav { gap: 0; } .nav a { padding: 8px 8px; font-size: .875rem; } .site-header .wrap { gap: 16px; } }
+@media (min-width: 1241px) { .nav { gap: 0; } .nav a { padding: 8px 7px; font-size: .875rem; } .site-header .wrap { gap: 14px; } }
 /* ---------- 상담 3채널 ---------- */
 .btn--kakao { position: relative; overflow: hidden; }
 .btn--kakao::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.65) 50%, transparent 70%); transform: translateX(-120%); animation: shine 4.5s ease-in-out infinite 3.2s; pointer-events: none; }
