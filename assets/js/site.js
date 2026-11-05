@@ -53,17 +53,57 @@
     '<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="currentColor" opacity=".18"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="2" d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>' +
     '<symbol id="i-book" viewBox="0 0 24 24"><path fill="currentColor" opacity=".18" d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h6a2 2 0 012 2v12a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v12a2 2 0 012-2h6z"/></symbol>' +
     '<symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></symbol>' +
+    '<symbol id="i-telegram" viewBox="0 0 24 24"><path fill="currentColor" d="M21.5 3.6 2.9 10.8c-1.2.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.3-1.5zM8.6 13.4l9.6-6.1c.5-.3.9-.1.5.2l-7.9 7.2-.3 3.3-1.9-4.6z"/></symbol>' +
+    '<symbol id="i-tel" viewBox="0 0 24 24"><path fill="currentColor" d="M6.6 3h3l1.6 4.2-2 1.3a12 12 0 0 0 6.3 6.3l1.3-2 4.2 1.6v3c0 1-.8 1.8-1.8 1.8C10 19.2 4.8 14 4.8 4.8 4.8 3.8 5.6 3 6.6 3z"/></symbol>' +
     '</svg>';
   document.body.insertAdjacentHTML("afterbegin", sprite);
 
   /* ---------- 연락처·회사정보 바인딩 ---------- */
   $$("[data-href]").forEach(function (a) {
     var key = a.getAttribute("data-href");
-    var url = key === "kakao" ? get("contact.kakaoUrl") : key === "line" ? get("contact.lineUrl") : key === "invite" ? get("contact.inviteUrl") : key === "tel" ? (get("contact.phone") ? "tel:" + get("contact.phone").replace(/[^0-9]/g, "") : "") : "";
+    var url = key === "kakao" ? get("contact.kakaoUrl") : key === "line" ? get("contact.lineUrl") : key === "telegram" ? get("contact.telegramUrl") : key === "invite" ? get("contact.inviteUrl") : key === "tel" ? (get("contact.phone") ? "tel:" + get("contact.phone").replace(/[^0-9]/g, "") : "") : "";
     if (!url) { a.hidden = true; return; }
     a.href = url;
     if (/^https?:/.test(url)) { a.target = "_blank"; a.rel = "noopener"; }
   });
+  /* ---------- 상담 채널 선택창 ---------- */
+  (function () {
+    var chans = [
+      { key: "kakao", name: "카카오톡", url: get("contact.kakaoUrl"), id: get("contact.kakaoId"), icon: "i-kakao", note: "가장 빨라요" },
+      { key: "line", name: "라인", url: get("contact.lineUrl"), id: get("contact.lineId"), icon: "i-line", note: "" },
+      { key: "telegram", name: "텔레그램", url: get("contact.telegramUrl"), id: get("contact.telegramId"), icon: "i-telegram", note: "" }
+    ].filter(function (c) { return c.url; });
+    var btns = $$("[data-consult]");
+    if (!btns.length) return;
+    // 채널별 아이콘: 링크 없는 채널은 버튼의 작은 아이콘도 숨김
+    btns.forEach(function (b) {
+      var keys = chans.map(function (c) { return c.key; });
+      $$(".chs i", b).forEach(function (i) {
+        var k = i.className.indexOf("chs-k") >= 0 ? "kakao" : i.className.indexOf("chs-l") >= 0 ? "line" : "telegram";
+        if (keys.indexOf(k) < 0) i.remove();
+      });
+    });
+    if (!chans.length) { btns.forEach(function (b) { b.hidden = true; }); return; }
+    if (chans.length === 1) { // 채널이 하나면 바로 연결
+      btns.forEach(function (b) { b.href = chans[0].url; b.target = "_blank"; b.rel = "noopener"; b.setAttribute("data-href", chans[0].key); });
+      return;
+    }
+    var sheet = document.createElement("div");
+    sheet.className = "consult"; sheet.hidden = true; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-label", "상담 채널 선택");
+    sheet.innerHTML = '<div class="consult-bg"></div><div class="consult-box"><div class="consult-head"><b>어디로 상담할까요?</b><button type="button" class="consult-x" aria-label="닫기">×</button></div><p>편한 메신저를 고르세요. 어떤 질문이든 괜찮아요.</p><div class="consult-list">' +
+      chans.map(function (c) {
+        return '<a class="chan chan--' + c.key + '" href="' + c.url + '" target="_blank" rel="noopener" data-track="' + c.key + '"><svg><use href="#' + c.icon + '"/></svg><span><b>' + c.name + '</b>' + (c.id ? '<small>ID ' + c.id + '</small>' : (c.note ? '<small>' + c.note + '</small>' : '')) + '</span><i>›</i></a>';
+      }).join("") + '</div></div>';
+    document.body.appendChild(sheet);
+    function open() { sheet.hidden = false; requestAnimationFrame(function () { sheet.classList.add("is-open"); }); }
+    function close() { sheet.classList.remove("is-open"); setTimeout(function () { sheet.hidden = true; }, 220); }
+    btns.forEach(function (b) { b.href = "#consult"; b.addEventListener("click", function (e) { e.preventDefault(); open(); try { if (window.gtag) gtag("event", "open_consult"); } catch (x) {} }); });
+    sheet.querySelector(".consult-bg").addEventListener("click", close);
+    sheet.querySelector(".consult-x").addEventListener("click", close);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sheet.hidden) close(); });
+    $$("[data-track]", sheet).forEach(function (a) { a.addEventListener("click", function () { try { if (window.gtag) gtag("event", "click_" + a.getAttribute("data-track"), { label: "consult" }); if (window.fbq) fbq("trackCustom", "click_" + a.getAttribute("data-track")); } catch (x) {} setTimeout(close, 150); }); });
+  })();
+
   $$("[data-text]").forEach(function (el) {
     var v = get(el.getAttribute("data-text"));
     if (v === undefined || v === null || v === "") { var row = el.closest("[data-optional]"); if (row) row.hidden = true; return; }
@@ -88,9 +128,10 @@
     } catch (e) { if (fallbackEl) selectText(fallbackEl); toast("선택된 내용을 길게 눌러 복사해 주세요"); }
   }
   $$("[data-copy]").forEach(function (b) {
-    b.addEventListener("click", function () {
+    b.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
       var v = get(b.getAttribute("data-copy")) || "";
-      copy(String(v), b.parentElement && b.parentElement.querySelector("b"));
+      copy(String(v), b.parentElement && b.parentElement.querySelector("em, b"));
     });
   });
 
