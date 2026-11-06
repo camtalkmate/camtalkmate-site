@@ -41,10 +41,10 @@ window.SITE = {
     inviteUrl: "https://link.camtalk.kr/gg/aresjsh", // 캠톡 소속 가입 초대링크
     kakaoUrl: "https://open.kakao.com/o/sKg3aPVi", // ★입력: 카카오 오픈채팅/채널 링크
     kakaoId: "camtalkmate",                        // ★입력: 화면에 보여줄 카카오 ID
-    lineUrl: "https://line.me/R/ti/p/~camtalkmate",                                    // ★입력: 라인 링크 (예: https://line.me/ti/p/XXXX). 비우면 라인 버튼 숨김
-    lineId: "camtalkmate",
-    telegramUrl: "https://t.me/camtalkmate",                                // ★입력: 텔레그램 링크 (예: https://t.me/camtalkmate). 비우면 숨김
-    telegramId: "camtalkmate",
+    lineUrl: "https://line.me/R/ti/p/~camtalkus",                                    // ★입력: 라인 링크 (예: https://line.me/ti/p/XXXX). 비우면 라인 버튼 숨김
+    lineId: "camtalkus",
+    telegramUrl: "https://t.me/camtalkus",                                // ★입력: 텔레그램 링크 (예: https://t.me/camtalkmate). 비우면 숨김
+    telegramId: "camtalkus",
     phone: "",                                      // 전화 상담을 받는다면 입력 (예: "010-0000-0000")
     hours: "24시간 상담 · 평균 10분 이내 답변"
   },
