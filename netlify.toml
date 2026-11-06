@@ -36,3 +36,16 @@
   from = "/admin"
   to = "/admin/"
   status = 301
+
+# 옛 주소(캠톡메이트) → 새 주소(캠톡어스)로 영구 이동
+[[redirects]]
+  from = "https://camtalkmate.com/*"
+  to = "https://camtalkus.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.camtalkmate.com/*"
+  to = "https://camtalkus.com/:splat"
+  status = 301
+  force = true
