@@ -5,4 +5,4 @@ Disallow: /withdraw.html
 Disallow: /withdraw-done.html
 Disallow: /admin/
 
-Sitemap: https://camtalkmate.com/sitemap.xml
+Sitemap: https://camtalkus.com/sitemap.xml

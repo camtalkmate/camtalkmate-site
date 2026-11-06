@@ -1,5 +1,5 @@
 /* =====================================================================
-   캠톡메이트 관리자 서버 스크립트 v3 (Google Apps Script)
+   캠톡어스 관리자 서버 스크립트 v3 (Google Apps Script)
    - 관리자 계정(아이디/비밀번호) 로그인, 계정 추가·삭제·비밀번호 변경
    - 출금신청 접수·관리
    ---------------------------------------------------------------------
@@ -211,7 +211,7 @@ function submit(b) {
   sh.getRange(sh.getLastRow(), 6).setNumberFormat("#,##0");
   if (NOTIFY_EMAIL) {
     try {
-      MailApp.sendEmail(NOTIFY_EMAIL, "[캠톡메이트] 출금신청 " + id + " · " + nick + " · " + amount.toLocaleString() + "원",
+      MailApp.sendEmail(NOTIFY_EMAIL, "[캠톡어스] 출금신청 " + id + " · " + nick + " · " + amount.toLocaleString() + "원",
         "접수번호: " + id + "\n닉네임: " + nick + "\n전화: " + phone + "\n금액: " + amount.toLocaleString() + "원\n은행: " + bank + " " + account + " (" + holder + ")\n\n관리자 페이지에서 확인하세요.");
     } catch (x) {}
   }

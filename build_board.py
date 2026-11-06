@@ -8,8 +8,8 @@
 import re, glob, os, html, datetime, json
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-SITE = "https://camtalkmate.com"
-BRAND = "캠톡메이트"
+SITE = "https://camtalkus.com"
+BRAND = "캠톡어스"
 POSTS_DIR = os.path.join(ROOT, "board", "posts")
 MD_DIR = os.path.join(ROOT, "board", "_posts")   # 관리자 페이지가 글을 저장하는 곳 (마크다운)
 
@@ -133,7 +133,7 @@ def page_shell(title, desc, canonical, body, extra_head="", depth=2):
 <body>
 <header class="site-header">
   <div class="wrap">
-    <a class="logo" href="{up}" aria-label="홈으로"><span class="logo-mark" aria-hidden="true">S</span><span><span data-text="brand.name">{BRAND}</span><small data-text="brand.agencyLabel">캠톡 공식 에이전시</small></span></a>
+    <a class="logo" href="{up}" aria-label="홈으로"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="38" cy="38" r="10" fill="#fff"/><circle cx="62" cy="38" r="10" fill="#fff" fill-opacity=".85"/><path d="M20 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff"/><path d="M44 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff" fill-opacity=".85"/></svg></span><span><span data-text="brand.name">{BRAND}</span><small data-text="brand.agencyLabel">캠톡 공식 에이전시</small></span></a>
     <nav class="nav" id="nav" aria-label="주요 메뉴">
       <a href="{up}">홈</a>
       <a href="{up}board/" class="nav-board">게시판</a>
@@ -152,7 +152,7 @@ def page_shell(title, desc, canonical, body, extra_head="", depth=2):
 <footer class="site-footer">
   <div class="wrap">
     <div class="foot-top">
-      <a class="logo" href="{up}"><span class="logo-mark" aria-hidden="true">S</span><span data-text="brand.name">{BRAND}</span></a>
+      <a class="logo" href="{up}"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="38" cy="38" r="10" fill="#fff"/><circle cx="62" cy="38" r="10" fill="#fff" fill-opacity=".85"/><path d="M20 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff"/><path d="M44 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff" fill-opacity=".85"/></svg></span><span data-text="brand.name">{BRAND}</span></a>
       <nav class="foot-links" aria-label="하단 메뉴"><a href="{up}">홈</a><a href="{up}board/">게시판</a><a href="{up}#faq">자주 묻는 질문</a><a href="{up}#contact">상담 · 시작</a><a href="{up}privacy.html">개인정보 처리방침</a></nav>
     </div>
     <div class="foot-info">
@@ -170,7 +170,7 @@ def page_shell(title, desc, canonical, body, extra_head="", depth=2):
 
 CTA_BOX = """
 <aside class="post-cta">
-  <div><b>처음이라 망설여진다면, 일단 물어만 보셔도 괜찮아요.</b><span>캠톡 공식 에이전시 캠톡메이트 · 가입비 0원 · 1만원부터 당일 출금</span></div>
+  <div><b>처음이라 망설여진다면, 일단 물어만 보셔도 괜찮아요.</b><span>캠톡 공식 에이전시 캠톡어스 · 가입비 0원 · 1만원부터 당일 출금</span></div>
   <div class="btn-row"><a class="btn btn--primary" data-href="invite">바로 시작하기</a><a class="btn btn--kakao" data-href="kakao"><svg><use href="#i-kakao"/></svg>카톡 상담하기</a></div>
 </aside>"""
 
@@ -235,7 +235,7 @@ def build():
   <div class="aurora" aria-hidden="true"><i></i><i></i></div>
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">캠톡메이트 게시판</span>
+      <span class="eyebrow">캠톡어스 게시판</span>
       <h1 class="h2">캠톡과 캠톡커,<br>궁금한 걸 차근차근 풀어드려요</h1>
       <p>처음 접하는 분들이 많이 묻는 것들을 글로 정리했어요. 읽다가 궁금한 게 생기면 언제든 카톡으로 물어보세요.</p>
     </div>
@@ -244,7 +244,7 @@ def build():
 <section class="band band--2 board-list">
   <div class="wrap"><ul class="post-list">{items}</ul></div>
 </section>"""
-    page = page_shell("게시판 · 캠톡커 궁금증 풀이", "캠톡커 활동, 수익 구조, 출금과 세금, 안전 기능, 에이전시 고르는 법까지. 캠톡 공식 에이전시 캠톡메이트가 처음 시작하는 분들을 위해 정리한 글 모음입니다.", SITE + "/board/", body,
+    page = page_shell("게시판 · 캠톡커 궁금증 풀이", "캠톡커 활동, 수익 구조, 출금과 세금, 안전 기능, 에이전시 고르는 법까지. 캠톡 공식 에이전시 캠톡어스가 처음 시작하는 분들을 위해 정리한 글 모음입니다.", SITE + "/board/", body,
                       '<script type="application/ld+json">%s</script>' % json.dumps(ld, ensure_ascii=False), depth=1)
     page = page.replace('<meta property="og:type" content="article">', '<meta property="og:type" content="website">')
     open(os.path.join(ROOT, "board", "index.html"), "w", encoding="utf-8").write(page)
@@ -272,7 +272,7 @@ def build():
   <title>%s 게시판</title>
   <link>%s/board/</link>
   <atom:link href="%s/feed.xml" rel="self" type="application/rss+xml"/>
-  <description>캠톡 공식 에이전시 캠톡메이트 — 캠톡커 활동, 수익, 안전에 대한 글</description>
+  <description>캠톡 공식 에이전시 캠톡어스 — 캠톡커 활동, 수익, 안전에 대한 글</description>
   <language>ko</language>
 %s</channel>
 </rss>

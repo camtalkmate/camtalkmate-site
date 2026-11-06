@@ -12,9 +12,9 @@ backend:
     deleteMedia: "이미지 삭제: {{path}}"
 
 locale: ko
-site_url: https://camtalkmate.com
-display_url: https://camtalkmate.com
-logo_url: https://camtalkmate.com/assets/img/icon-192.png
+site_url: https://camtalkus.com
+display_url: https://camtalkus.com
+logo_url: https://camtalkus.com/assets/img/icon-192.png
 
 media_folder: "assets/img/uploads"
 public_folder: "/assets/img/uploads"
@@ -38,7 +38,7 @@ collections:
       - { label: "제목 (검색어가 앞에 오게, 32자 이내)", name: "title", widget: "string" }
       - { label: "날짜", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "검색 결과 요약 (80~110자)", name: "description", widget: "text", hint: "네이버·구글 검색 결과에 제목 아래 보이는 문장입니다." }
-      - { label: "키워드 (쉼표로 5개)", name: "keywords", widget: "string", default: "캠톡커, 캠톡 에이전시, 캠톡 수익, 재택 부업, 캠톡메이트" }
+      - { label: "키워드 (쉼표로 5개)", name: "keywords", widget: "string", default: "캠톡커, 캠톡 에이전시, 캠톡 수익, 재택 부업, 캠톡어스" }
       - { label: "주소용 영문 이름 (소문자-하이픈, 예: camtalk-first-week)", name: "slug", widget: "string", hint: "저장 후에는 바꾸지 마세요. 글 주소가 됩니다.", pattern: ["^[a-z0-9-]+$", "영문 소문자, 숫자, 하이픈(-)만 쓸 수 있어요"] }
       - { label: "대표 이미지 (목록·카톡 공유 썸네일, 가로 1200×세로 675 권장)", name: "image", widget: "image", required: false, hint: "비우면 기본 이미지가 쓰여요." }
       - { label: "임시 저장 (체크하면 사이트에 안 보임)", name: "draft", widget: "boolean", default: false, required: false }
