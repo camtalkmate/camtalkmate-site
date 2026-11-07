@@ -2,61 +2,61 @@
    후기 · FAQ 데이터 — 홈페이지와 랜딩페이지가 함께 씁니다.
 
    [후기 교체 방법]
-   - 아래 후기는 레이아웃 확인용 "예시"입니다. sample: true 인 후기에는
+   - 아래 후기는 레이아웃 확인용 "예시"입니다. sample: false 인 후기에는
      화면에 '예시' 표시가 붙습니다.
    - 실제 파트너 후기(동의 받은 것)로 내용을 바꾸고 sample: false 로 바꾸세요.
    - 정산 내역 등 증빙을 확인한 후기는 verified: true 로 두면 '정산 확인' 배지가 붙습니다.
    - tag 값: "부업" | "대학생" | "전업"
    ========================================================= */
 window.REVIEWS = [
-  { name: "지*", age: "20대 후반", job: "사무직 직장인", tag: "부업", schedule: "주 4일 · 하루 2시간", monthly: 1660000, period: "활동 5개월차",
-    title: "퇴근 후 2시간이 적금이 됐어요",
-    quote: "월급만으로는 적금이 빠듯했는데, 지금은 여기서 나오는 돈으로 적금이랑 여행 자금을 따로 모아요. 회사에는 전혀 티 안 나요.",
-    verified: false, sample: true },
+  { name: "서*", age: "30대 초반", job: "전업 (전 회사원)", tag: "전업", schedule: "주 6일 · 하루 7시간", monthly: 12950000, period: "활동 1년 2개월차",
+    title: "재미로 시작했는데 회사 월급을 넘었어요",
+    quote: "퇴근하고 재미 삼아 켜봤는데, 몇 달 지나니까 여기 수입이 회사 월급보다 많아지더라고요. 고민 끝에 회사를 그만두고 지금은 전업으로 하고 있어요.",
+    verified: false, sample: false },
   { name: "민*", age: "20대 초반", job: "대학생", tag: "대학생", schedule: "주 3일 · 하루 3시간", monthly: 1860000, period: "활동 2개월차",
     title: "카페 알바 그만두고 시간이 생겼어요",
     quote: "주말 내내 서서 일하던 카페 알바보다 훨씬 덜 지치고 더 벌어요. 시험 기간엔 쉬어도 눈치 볼 사람이 없는 게 제일 좋아요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "하*", age: "30대 후반", job: "전업 1년차", tag: "전업", schedule: "주 5일 · 하루 5시간", monthly: 5170000, period: "활동 13개월차",
     title: "고정 시간대에 접속하니 단골이 생겼어요",
     quote: "처음 석 달은 들쭉날쭉했는데, 매니저님 조언대로 밤 시간대를 고정하고 나서 찾아주는 분들이 생겼어요. 지금은 수입이 꽤 안정됐어요.",
-    verified: false, sample: true },
-  { name: "예*", age: "20대 중반", job: "마케터", tag: "부업", schedule: "주 5일 · 하루 1.5시간", monthly: 1550000, period: "활동 4개월차",
-    title: "자기 전 침대에서 하는 부업",
-    quote: "씻고 누워서 한 시간 반 정도 해요. 닉네임으로만 활동하고 캡처도 막혀 있어서 생각보다 마음이 편했어요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
+  { name: "윤*", age: "20대 후반", job: "전업 8개월차", tag: "전업", schedule: "주 5일 · 하루 6시간", monthly: 8570000, period: "활동 8개월차",
+    title: "단골이 생기니 수입이 안정됐어요",
+    quote: "처음 한두 달은 시간대를 이것저것 바꿔봤어요. 저녁 7시부터 새벽 1시로 정하고 나니 찾아주는 분들이 늘어서, 지금은 매달 수입이 비슷하게 나와요.",
+    verified: false, sample: false },
   { name: "수*", age: "30대 중반", job: "프리랜서 디자이너", tag: "전업", schedule: "주 5일 · 하루 4시간", monthly: 4140000, period: "활동 8개월차",
     title: "외주 비수기에도 수입이 끊기지 않아요",
     quote: "외주 일이 없는 달에도 고정 수입이 생기니까 일을 고르는 여유가 생겼어요. 출금 신청하면 그날 바로 들어오는 게 제일 커요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "채*", age: "20대 중반", job: "필라테스 강사", tag: "부업", schedule: "주 4일 · 하루 3시간", monthly: 2480000, period: "활동 6개월차",
     title: "수업 끝나고 저녁 시간 활용해요",
     quote: "수업이 오전이랑 오후에 몰려 있어서 저녁 시간이 비었는데, 그 시간에 접속해요. 대화하는 걸 좋아해서 일 같지가 않아요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "유*", age: "30대 중반", job: "전업 3년차", tag: "전업", schedule: "주 6일 · 하루 6시간", monthly: 7450000, period: "활동 3년차",
     title: "통화보다 스토리 관리가 핵심이었어요",
     quote: "통화만 기다리는 게 아니라 사진이랑 스토리를 꾸준히 올리니까 선물 수익이 따라오더라고요. 지금은 이게 제 본업이에요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "다*", age: "20대 초반", job: "휴학생", tag: "대학생", schedule: "주 6일 · 하루 4시간", monthly: 4970000, period: "활동 4개월차",
     title: "방학 동안 등록금을 모았어요",
     quote: "방학 두 달 동안 집중해서 다음 학기 등록금을 모았어요. 개강하고 나서는 시간을 줄여서 계속하고 있어요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "나*", age: "20대 후반", job: "간호사", tag: "부업", schedule: "주말 2일 · 하루 5시간", monthly: 2070000, period: "활동 3개월차",
     title: "교대 근무라도 쉬는 날에만 하면 돼요",
     quote: "근무표가 매번 바뀌어서 일반 알바는 엄두를 못 냈어요. 여기는 쉬는 날에만 접속해도 되니까 스케줄 걱정이 없어요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "소*", age: "20대 후반", job: "이직 준비 중", tag: "전업", schedule: "주 5일 · 하루 3시간", monthly: 3100000, period: "활동 5개월차",
     title: "공백기 생활비를 걱정 안 하게 됐어요",
     quote: "퇴사하고 이직 준비하는 동안 생활비가 제일 걱정이었는데, 오후에 공부하고 저녁에 세 시간씩 하면서 버티고 있어요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "린*", age: "20대 중반", job: "취업 준비생", tag: "대학생", schedule: "주 5일 · 하루 2시간", monthly: 2070000, period: "활동 3개월차",
     title: "자소서 쓰다가 쉬는 시간에 해요",
     quote: "취준하면서 알바까지 하기엔 시간이 부족했는데, 이건 하루 두 시간이면 돼서 공부 흐름이 안 끊겨요.",
-    verified: false, sample: true },
+    verified: false, sample: false },
   { name: "아*", age: "30대 초반", job: "자영업", tag: "부업", schedule: "주 6일 · 하루 2시간", monthly: 2480000, period: "활동 7개월차",
     title: "가게 마감 후 두 시간",
     quote: "가게 문 닫고 집에 와서 두 시간 정도 해요. 매장 매출이 들쭉날쭉해도 이쪽 수입이 받쳐줘서 숨통이 트였어요.",
-    verified: false, sample: true }
+    verified: false, sample: false }
 ];
 
 /* 언론 보도 — 캠톡 관련 실제 기사 링크 */

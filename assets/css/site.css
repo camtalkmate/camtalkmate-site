@@ -402,6 +402,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 .rv-money { display: grid; gap: 2px; padding: 14px 16px; border-radius: 18px; background: linear-gradient(120deg, #FFE8EF, #FFF1E8); }
 .rv-money .lbl { font-size: var(--t-xs); color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
 .rv-money .amt { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.7rem; letter-spacing: -.03em; line-height: 1.15; color: var(--rose-2); }
+.rv-money .hi { font-size: var(--t-xs); color: var(--ink-3); }
 .rv-money .amt small { font-family: var(--f-body); font-size: .55em; font-weight: 700; margin-left: 2px; color: var(--ink-2); }
 .rv h3 { font-size: var(--t-l); }
 .rv p { color: var(--ink-2); font-size: var(--t-s); }
