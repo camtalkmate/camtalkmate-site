@@ -387,7 +387,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 .chips button { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--surface); color: var(--ink-2); font: 700 var(--t-s)/1 var(--f-body); cursor: pointer; box-shadow: var(--vol); transition: all .2s; }
 .chips button[aria-pressed="true"] { background: var(--grad); color: #fff; box-shadow: var(--glow); }
 .chips button span { font-family: var(--f-num); opacity: .75; margin-left: 5px; }
-.rv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+.rv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 18px; align-items: stretch; }
 @media (max-width: 1000px) { .rv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 761px) { .rv h3 { min-height: 2.7em; } }
 .rv { margin-bottom: 0; background: var(--surface); border-radius: var(--r-l); padding: 24px; box-shadow: var(--vol); display: flex; flex-direction: column; gap: 16px; }
