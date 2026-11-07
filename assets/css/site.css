@@ -387,8 +387,10 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 .chips button { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--surface); color: var(--ink-2); font: 700 var(--t-s)/1 var(--f-body); cursor: pointer; box-shadow: var(--vol); transition: all .2s; }
 .chips button[aria-pressed="true"] { background: var(--grad); color: #fff; box-shadow: var(--glow); }
 .chips button span { font-family: var(--f-num); opacity: .75; margin-left: 5px; }
-.rv-grid { columns: 3 300px; column-gap: 18px; }
-.rv { break-inside: avoid; margin-bottom: 18px; background: var(--surface); border-radius: var(--r-l); padding: 24px; box-shadow: var(--vol); display: grid; gap: 16px; }
+.rv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+@media (max-width: 1000px) { .rv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 761px) { .rv h3 { min-height: 2.7em; } }
+.rv { margin-bottom: 0; background: var(--surface); border-radius: var(--r-l); padding: 24px; box-shadow: var(--vol); display: flex; flex-direction: column; gap: 16px; }
 .rv-top { display: flex; align-items: center; gap: 12px; }
 .rv-ava { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; flex: none; box-shadow: inset 0 -3px 0 rgba(0,0,0,.12), 0 6px 12px -6px rgba(0,0,0,.3); }
 .rv-who { min-width: 0; display: grid; }
@@ -406,7 +408,7 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; bo
 .rv-money .amt small { font-family: var(--f-body); font-size: .55em; font-weight: 700; margin-left: 2px; color: var(--ink-2); }
 .rv h3 { font-size: var(--t-l); }
 .rv p { color: var(--ink-2); font-size: var(--t-s); }
-.rv-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--t-xs); color: var(--ink-3); padding-top: 14px; border-top: 1px dashed var(--line-2); }
+.rv-meta { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--t-xs); color: var(--ink-3); padding-top: 14px; border-top: 1px dashed var(--line-2); }
 .rv-more { display: flex; justify-content: center; margin-top: 12px; }
 .rv-disclaimer { margin-top: 20px; font-size: var(--t-xs); color: var(--ink-3); text-align: center; }
 

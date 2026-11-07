@@ -268,9 +268,9 @@
         '<div class="rv-top"><span class="rv-ava" style="background:' + colors[i % colors.length] + '">' + r.name.charAt(0) + "</span>" +
         '<div class="rv-who"><b>' + r.name + " 님</b><span>" + r.age + " · " + r.job + "</span></div>" +
         '<div class="rv-tags">' + badge + sample + "</div></div>" +
-        '<div class="rv-money"><div class="lbl"><span>월 평균 수익</span><span>' + r.schedule + "</span></div>" +
+        '<div class="rv-money"><div class="lbl"><span>' + (r.label || "월 평균 수익") + '</span><span>' + r.schedule + "</span></div>" +
         '<div class="amt">' + man(r.monthly) + "<small>만원</small></div>" +
-        (r.monthly >= 5000000 ? '<div class="hi">상위 캠톡커 기준 · 개인차 있음</div>' : "") + "</div>" +
+        '<div class="hi">' + (r.monthly >= 5000000 ? "상위 캠톡커 기준 · 개인차 있음" : "소속 캠톡커 실제 사례 기준") + "</div>" + "</div>" +
         "<h3>" + r.title + "</h3><p>" + r.quote + "</p>" +
         '<div class="rv-meta"><span>' + r.period + "</span></div></article>";
     };
