@@ -30,7 +30,7 @@ def read_post(path):
         "keywords": meta(src, "keywords"),
         "date": meta(src, "article:published_time", prop=True)[:10],
         "chars": len(re.sub(r"\s", "", text)),
-        "url": "%s/board/posts/%s.html" % (SITE, slug),
+        "url": "%s/board/posts/%s" % (SITE, slug),
     }
 
 
@@ -93,7 +93,7 @@ def read_md(path):
     date = str(meta.get("date", ""))[:10]
     text = re.sub(r"[#*>\-\[\]()]", "", body)
     return {"slug": slug, "title": meta.get("title", slug), "description": meta.get("description", ""), "keywords": meta.get("keywords", ""),
-            "date": date, "body_md": body, "chars": len(re.sub(r"\s", "", text)), "url": "%s/board/posts/%s.html" % (SITE, slug),
+            "date": date, "body_md": body, "chars": len(re.sub(r"\s", "", text)), "url": "%s/board/posts/%s" % (SITE, slug),
             "draft": str(meta.get("draft", "")).lower() in ("true", "yes", "1"),
             "image": meta.get("image", "") or "/assets/img/og.jpg"}
 
@@ -153,7 +153,7 @@ def page_shell(title, desc, canonical, body, extra_head="", depth=2):
   <div class="wrap">
     <div class="foot-top">
       <a class="logo" href="{up}"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="38" cy="38" r="10" fill="#fff"/><circle cx="62" cy="38" r="10" fill="#fff" fill-opacity=".85"/><path d="M20 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff"/><path d="M44 74c0-11 8-19 18-19s18 8 18 19z" fill="#fff" fill-opacity=".85"/></svg></span><span data-text="brand.name">{BRAND}</span></a>
-      <nav class="foot-links" aria-label="하단 메뉴"><a href="{up}">홈</a><a href="{up}board/">게시판</a><a href="{up}#faq">자주 묻는 질문</a><a href="{up}#contact">상담 · 시작</a><a href="{up}privacy.html">개인정보 처리방침</a></nav>
+      <nav class="foot-links" aria-label="하단 메뉴"><a href="{up}">홈</a><a href="{up}board/">게시판</a><a href="{up}#faq">자주 묻는 질문</a><a href="{up}#contact">상담 · 시작</a><a href="{up}privacy">개인정보 처리방침</a></nav>
     </div>
     <div class="foot-info">
       <span>상호 <span data-text="company.name"></span></span><span>대표 <span data-text="company.ceo"></span></span><span>사업자등록번호 <span data-text="company.bizNo"></span></span><span data-optional>통신판매업신고 <span data-text="company.ecommerceNo"></span></span><span>주소 <span data-text="company.address"></span></span>
@@ -190,7 +190,7 @@ def post_page(p, body_html, related):
         ]}
     extra = '<meta name="keywords" content="%s">\n<meta property="article:published_time" content="%sT09:00:00+09:00">\n<script type="application/ld+json">%s</script>' % (
         html.escape(p["keywords"]), p["date"], json.dumps(ld, ensure_ascii=False))
-    rel = "".join('<li><a href="%s.html"><b>%s</b><span>%s</span></a></li>' % (r["slug"], html.escape(r["title"]), r["date"]) for r in related)
+    rel = "".join('<li><a href="%s"><b>%s</b><span>%s</span></a></li>' % (r["slug"], html.escape(r["title"]), r["date"]) for r in related)
     body = f"""
 <article class="post wrap">
   <nav class="crumb" aria-label="경로"><a href="../../">홈</a> › <a href="../">게시판</a></nav>
@@ -220,7 +220,7 @@ def build():
     # 3) 목록 페이지
     items = "".join(f"""
       <li class="post-card">
-        <a href="posts/{p["slug"]}.html">
+        <a href="posts/{p["slug"]}">
           <span class="post-thumb"><picture><source srcset="..{re.sub(r"[.](jpe?g|png)$", ".webp", p["image"])}" type="image/webp"><img src="..{p["image"]}" alt="" loading="lazy" width="1200" height="675"></picture></span>
           <time datetime="{p["date"]}">{p["date"].replace("-", ".")}</time>
           <h2>{html.escape(p["title"])}</h2>

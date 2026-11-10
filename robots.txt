@@ -4,5 +4,8 @@ Disallow: /privacy.html
 Disallow: /withdraw.html
 Disallow: /withdraw-done.html
 Disallow: /admin/
+Disallow: /privacy
+Disallow: /withdraw
+Disallow: /withdraw-done
 
 Sitemap: https://camtalkus.com/sitemap.xml
