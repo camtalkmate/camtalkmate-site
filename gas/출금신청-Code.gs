@@ -411,13 +411,11 @@ function notifyClick(b) {
   var cache = CacheService.getScriptCache();
   var vid = String(b.vid || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 24) || sha(String(b.ua || "")).slice(0, 16);
   var key = "n:" + kind + ":" + vid;
-  if (cache.get(key)) return out({ ok: true, skip: true });          // 같은 방문자·같은 버튼은 5분에 한 번만 (보내기에 성공했을 때만 기억)
   var hk = "nh:" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMddHH"), cnt = parseInt(cache.get(hk) || "0", 10);
   if (cnt >= 120) return out({ ok: true, skip: true });              // 시간당 최대 120건 (장난 클릭 방지)
   cache.put(hk, String(cnt + 1), 3700);
   var sent = tgSend("🔔 [" + NOTIFY_LABELS[kind] + "] 클릭\n시간: " + Utilities.formatDate(new Date(), "Asia/Seoul", "MM/dd HH:mm") +
          "\n들어온 곳: " + tgClip(b.src, 80, "알 수 없음") + "\n페이지: " + tgClip(b.page, 60, "/") + "\n기기: " + tgDevice(b.ua));
-  if (sent) cache.put(key, "1", 300);
   return out({ ok: true, sent: sent });
 }
 function tgGet(me) {
