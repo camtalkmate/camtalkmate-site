@@ -386,14 +386,17 @@ function settingsSave(b, me) {
 }
 
 /* ---------- 텔레그램 알림 (토큰·ID는 스크립트 속성 TG_TOKEN / TG_CHAT 에 저장, 관리자 페이지에서 입력) ---------- */
+var TG_LAST_ERR = "";
 function tgConf() { var p = PropertiesService.getScriptProperties(); return { token: p.getProperty("TG_TOKEN") || "", chat: p.getProperty("TG_CHAT") || "" }; }
 function tgSend(text) {
   var c = tgConf(); if (!c.token || !c.chat) return false;
   try {
     var r = UrlFetchApp.fetch("https://api.telegram.org/bot" + c.token + "/sendMessage", { method: "post", contentType: "application/json",
       payload: JSON.stringify({ chat_id: c.chat, text: text, disable_web_page_preview: true }), muteHttpExceptions: true });
-    return r.getResponseCode() === 200;
-  } catch (x) { return false; }
+    if (r.getResponseCode() === 200) return true;
+    try { TG_LAST_ERR = JSON.parse(r.getContentText()).description || ("HTTP " + r.getResponseCode()); } catch (y) { TG_LAST_ERR = "HTTP " + r.getResponseCode(); }
+    return false;
+  } catch (x) { TG_LAST_ERR = String(x); return false; }
 }
 var NOTIFY_LABELS = { invite: "바로 시작하기", kakao: "상담하기 · 카카오톡", line: "상담하기 · 라인", telegram: "상담하기 · 텔레그램" };
 function tgClip(s, n, dflt) { s = String(s || "").replace(/[\r\n]/g, " ").trim(); return s ? s.slice(0, n) : dflt; }
@@ -431,5 +434,5 @@ function tgSave(b, me) {
 }
 function tgTest(me) {
   return tgSend("✅ 캠톡어스 알림 연결 테스트 (" + me.id + ")") ? out({ ok: true })
-    : err("보내지 못했어요. 토큰과 ID를 확인하고, 텔레그램에서 봇에게 먼저 '시작'을 눌렀는지 확인해 주세요");
+    : err("보내지 못했어요 (텔레그램 응답: " + (TG_LAST_ERR || (tgConf().token ? "알 수 없음" : "토큰이 저장되지 않았어요")) + "). 토큰과 ID를 확인하고, 봇에게 먼저 '시작'을 눌렀는지 확인해 주세요");
 }
