@@ -420,7 +420,7 @@
     if (Object.keys(utm).length) sessionStorage.setItem("utm", JSON.stringify(utm));
     else utm = JSON.parse(sessionStorage.getItem("utm") || "{}");
   } catch (e) {}
-  function track(name, extra) {
+  function trackEvt(name, extra) {
     var p = Object.assign({ page: location.pathname }, utm, extra || {});
     try { if (window.gtag) gtag("event", name, p); } catch (e) {}
     try { if (window.dataLayer && !window.gtag) dataLayer.push(Object.assign({ event: name }, p)); } catch (e) {}
@@ -428,7 +428,7 @@
   }
   $$("[data-href]").forEach(function (a) {
     var key = a.getAttribute("data-href");
-    a.addEventListener("click", function () { track("click_" + key, { label: (a.textContent || "").trim() }); notifyAdmin(key); });
+    a.addEventListener("click", function () { notifyAdmin(key); trackEvt("click_" + key, { label: (a.textContent || "").trim() }); });
   });
-  $$("[data-copy]").forEach(function (b) { b.addEventListener("click", function () { track("copy_contact", { what: b.getAttribute("data-copy") }); }); });
+  $$("[data-copy]").forEach(function (b) { b.addEventListener("click", function () { trackEvt("copy_contact", { what: b.getAttribute("data-copy") }); }); });
 })();
