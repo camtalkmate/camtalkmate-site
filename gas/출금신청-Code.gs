@@ -155,6 +155,7 @@ function doPost(e) {
     var action = b.action || "submit";
     if (action === "submit") return submit(b);          // 공개: 출금신청 접수
     if (action === "login") return login(b);            // 공개: 로그인
+    if (action === "notify") return notifyClick(b);     // 공개: 홈페이지 버튼 클릭 → 텔레그램 알림
     var me = checkToken(b.token);
     if (!me) return out({ ok: false, error: "로그인이 필요합니다", auth: true });
     switch (action) {
@@ -175,6 +176,9 @@ function doPost(e) {
       case "set.get":    return settingsGet();
       case "set.save":   return settingsSave(b, me);
       case "gh.status":  return ghStatus();
+      case "tg.get":     return tgGet(me);
+      case "tg.save":    return tgSave(b, me);
+      case "tg.test":    return tgTest(me);
     }
     return err("알 수 없는 요청");
   } catch (x) {
@@ -209,6 +213,7 @@ function submit(b) {
   sh.appendRow([id, now(), "대기", nick, phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3"), amount, bank, "'" + account, holder,
                 "'" + rrnF, encRRN(id, rrnB), "", "", String(b.utm || ""), String(b.ua || "").slice(0, 120)]);
   sh.getRange(sh.getLastRow(), 6).setNumberFormat("#,##0");
+  tgSend("💸 출금신청 접수\n접수번호: " + id + "\n닉네임: " + nick + "\n금액: " + amount.toLocaleString() + "원\n시간: " + now() + "\n→ 관리자 페이지에서 처리해 주세요");
   if (NOTIFY_EMAIL) {
     try {
       MailApp.sendEmail(NOTIFY_EMAIL, "[캠톡어스] 출금신청 " + id + " · " + nick + " · " + amount.toLocaleString() + "원",
@@ -378,4 +383,53 @@ function settingsSave(b, me) {
   if (!changed.length) return out({ ok: true, changed: [] });
   ghPutFile("assets/js/config.js", src, "사이트 설정 변경: " + changed.join(", ") + " (" + me.id + ")", fc.sha);
   return out({ ok: true, changed: changed });
+}
+
+/* ---------- 텔레그램 알림 (토큰·ID는 스크립트 속성 TG_TOKEN / TG_CHAT 에 저장, 관리자 페이지에서 입력) ---------- */
+function tgConf() { var p = PropertiesService.getScriptProperties(); return { token: p.getProperty("TG_TOKEN") || "", chat: p.getProperty("TG_CHAT") || "" }; }
+function tgSend(text) {
+  var c = tgConf(); if (!c.token || !c.chat) return false;
+  try {
+    var r = UrlFetchApp.fetch("https://api.telegram.org/bot" + c.token + "/sendMessage", { method: "post", contentType: "application/json",
+      payload: JSON.stringify({ chat_id: c.chat, text: text, disable_web_page_preview: true }), muteHttpExceptions: true });
+    return r.getResponseCode() === 200;
+  } catch (x) { return false; }
+}
+var NOTIFY_LABELS = { invite: "바로 시작하기", kakao: "상담하기 · 카카오톡", line: "상담하기 · 라인", telegram: "상담하기 · 텔레그램" };
+function tgClip(s, n, dflt) { s = String(s || "").replace(/[\r\n]/g, " ").trim(); return s ? s.slice(0, n) : dflt; }
+function tgDevice(ua) {
+  ua = String(ua || "");
+  if (/iPhone/.test(ua)) return "아이폰"; if (/iPad/.test(ua)) return "아이패드";
+  if (/Android/.test(ua)) return /Mobile/.test(ua) ? "안드로이드 폰" : "안드로이드 태블릿";
+  if (/Windows/.test(ua)) return "윈도우 PC"; if (/Macintosh/.test(ua)) return "맥"; return "기타";
+}
+function notifyClick(b) {
+  var kind = String(b.kind || ""); if (!NOTIFY_LABELS[kind]) return out({ ok: true });
+  var cache = CacheService.getScriptCache();
+  var vid = String(b.vid || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 24) || sha(String(b.ua || "")).slice(0, 16);
+  var key = "n:" + kind + ":" + vid;
+  if (cache.get(key)) return out({ ok: true, skip: true });          // 같은 방문자·같은 버튼은 10분에 한 번만
+  cache.put(key, "1", 600);
+  var hk = "nh:" + Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMddHH"), cnt = parseInt(cache.get(hk) || "0", 10);
+  if (cnt >= 120) return out({ ok: true, skip: true });              // 시간당 최대 120건 (장난 클릭 방지)
+  cache.put(hk, String(cnt + 1), 3700);
+  tgSend("🔔 [" + NOTIFY_LABELS[kind] + "] 클릭\n시간: " + Utilities.formatDate(new Date(), "Asia/Seoul", "MM/dd HH:mm") +
+         "\n들어온 곳: " + tgClip(b.src, 80, "알 수 없음") + "\n페이지: " + tgClip(b.page, 60, "/") + "\n기기: " + tgDevice(b.ua));
+  return out({ ok: true });
+}
+function tgGet(me) {
+  if (me.role !== "master") return err("최고관리자만 볼 수 있습니다");
+  var c = tgConf(); return out({ ok: true, hasToken: !!c.token, chat: c.chat });
+}
+function tgSave(b, me) {
+  if (me.role !== "master") return err("최고관리자만 바꿀 수 있습니다");
+  var p = PropertiesService.getScriptProperties(), tok = String(b.tgToken || "").trim(), chat = String(b.tgChat || "").trim();
+  if (tok) { if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(tok)) return err("봇 토큰 형식이 아니에요. BotFather가 준 값을 그대로 붙여 넣어 주세요"); p.setProperty("TG_TOKEN", tok); }
+  if (chat) { if (!/^-?\d{5,20}$/.test(chat)) return err("받는 사람 ID는 숫자만 넣어 주세요"); p.setProperty("TG_CHAT", chat); }
+  if (b.off) { p.deleteProperty("TG_TOKEN"); p.deleteProperty("TG_CHAT"); }
+  return out({ ok: true });
+}
+function tgTest(me) {
+  return tgSend("✅ 캠톡어스 알림 연결 테스트 (" + me.id + ")") ? out({ ok: true })
+    : err("보내지 못했어요. 토큰과 ID를 확인하고, 텔레그램에서 봇에게 먼저 '시작'을 눌렀는지 확인해 주세요");
 }

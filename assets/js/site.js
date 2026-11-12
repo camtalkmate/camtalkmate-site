@@ -58,6 +58,30 @@
     '</svg>';
   document.body.insertAdjacentHTML("afterbegin", sprite);
 
+  /* ---------- 관리자 텔레그램 알림 (버튼 클릭 시, 서버에서 중복 클릭은 걸러짐) ---------- */
+  var notifyKinds = { invite: 1, kakao: 1, line: 1, telegram: 1 };
+  try { if (!sessionStorage.getItem("ref0")) sessionStorage.setItem("ref0", document.referrer && document.referrer.indexOf(location.host) < 0 ? document.referrer : "-"); } catch (e) {}
+  function visitorId() { try { var v = localStorage.getItem("ctv"); if (!v) { v = Math.random().toString(36).slice(2, 12); localStorage.setItem("ctv", v); } return v; } catch (e) { return ""; } }
+  function visitSource() {
+    try {
+      var q = new URLSearchParams(location.search), u = q.get("utm_source") || (JSON.parse(sessionStorage.getItem("utm") || "{}").utm_source);
+      if (u) return "광고/링크: " + u;
+      var r = sessionStorage.getItem("ref0") || "-"; if (r === "-") return "직접 방문";
+      var h = new URL(r).hostname;
+      var names = [["naver", "네이버"], ["google", "구글"], ["daum", "다음"], ["kakao", "카카오"], ["instagram", "인스타그램"], ["facebook", "페이스북"], ["youtube", "유튜브"], ["tiktok", "틱톡"], ["bing", "빙"]];
+      for (var i = 0; i < names.length; i++) if (h.indexOf(names[i][0]) >= 0) return names[i][1] + " (" + h + ")";
+      return h;
+    } catch (e) { return ""; }
+  }
+  function notifyAdmin(kind) {
+    var ep = get("withdraw.endpoint"); if (!ep || !notifyKinds[kind]) return;
+    var body = JSON.stringify({ action: "notify", kind: kind, vid: visitorId(), src: visitSource(), page: location.pathname, ua: navigator.userAgent });
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon(ep, new Blob([body], { type: "text/plain" }))) return;
+    } catch (e) {}
+    try { fetch(ep, { method: "POST", body: body, mode: "no-cors", keepalive: true }); } catch (e) {}
+  }
+
   /* ---------- 연락처·회사정보 바인딩 ---------- */
   $$("[data-href]").forEach(function (a) {
     var key = a.getAttribute("data-href");
@@ -108,7 +132,7 @@
     sheet.querySelector(".consult-bg").addEventListener("click", close);
     sheet.querySelector(".consult-x").addEventListener("click", close);
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sheet.hidden) close(); });
-    $$("[data-track]", sheet).forEach(function (a) { a.addEventListener("click", function () { try { if (window.gtag) gtag("event", "click_" + a.getAttribute("data-track"), { label: "consult" }); if (window.fbq) fbq("trackCustom", "click_" + a.getAttribute("data-track")); } catch (x) {} setTimeout(close, 150); }); });
+    $$("[data-track]", sheet).forEach(function (a) { a.addEventListener("click", function () { notifyAdmin(a.getAttribute("data-track")); try { if (window.gtag) gtag("event", "click_" + a.getAttribute("data-track"), { label: "consult" }); if (window.fbq) fbq("trackCustom", "click_" + a.getAttribute("data-track")); } catch (x) {} setTimeout(close, 150); }); });
   })();
 
   $$("[data-text]").forEach(function (el) {
@@ -404,7 +428,7 @@
   }
   $$("[data-href]").forEach(function (a) {
     var key = a.getAttribute("data-href");
-    a.addEventListener("click", function () { track("click_" + key, { label: (a.textContent || "").trim() }); });
+    a.addEventListener("click", function () { track("click_" + key, { label: (a.textContent || "").trim() }); notifyAdmin(key); });
   });
   $$("[data-copy]").forEach(function (b) { b.addEventListener("click", function () { track("copy_contact", { what: b.getAttribute("data-copy") }); }); });
 })();

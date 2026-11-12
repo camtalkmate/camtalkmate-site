@@ -221,6 +221,22 @@
         <p class="ok-msg" id="setOk" hidden></p>
         <button class="btn btn--primary" type="submit" id="setSave">저장 (1~2분 뒤 사이트 반영)</button>
       </form>
+      <form class="fbox" id="tgForm" style="margin-top:18px">
+        <h2 class="fm-h2">텔레그램 알림 <small>"바로 시작하기"·"상담하기" 클릭과 출금신청 접수를 관리자 텔레그램으로 알려 드려요</small></h2>
+        <p class="adm-note" id="tgState">불러오는 중…</p>
+        <div class="grid2">
+          <div class="fm-field"><label>봇 토큰 (BotFather가 준 값)</label><input id="tgToken" type="password" autocomplete="off" placeholder="저장된 토큰은 다시 보이지 않아요"></div>
+          <div class="fm-field"><label>받는 사람 ID (숫자)</label><input id="tgChat" type="text" inputmode="numeric" placeholder="@userinfobot이 알려준 숫자"></div>
+        </div>
+        <p class="adm-note">토큰은 홈페이지 파일이 아니라 서버(구글 Apps Script) 안에만 저장돼요. 봇에게 먼저 텔레그램에서 '시작'을 눌러야 알림이 와요.</p>
+        <p class="fm-error" id="tgErr" hidden></p>
+        <p class="ok-msg" id="tgOk" hidden></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn--primary" type="submit" id="tgSave">저장</button>
+          <button class="btn" type="button" id="tgTest">테스트 알림 보내기</button>
+          <button class="btn" type="button" id="tgOff">알림 끄기</button>
+        </div>
+      </form>
     </section>
   </div>
 </main>
@@ -279,7 +295,7 @@
     if (v === "withdraw" && !rows.length) loadWd();
     if (v === "admins") loadAdmins();
     if (v === "board") loadPosts();
-    if (v === "settings") loadSettings();
+    if (v === "settings") { loadSettings(); loadTg(); }
   }
   window.addEventListener("hashchange", function () { if (token) show(location.hash.slice(1)); });
 
@@ -521,6 +537,26 @@
     }).catch(function (ex) { er.textContent = /토큰/.test(ex.message) ? "GitHub 연결이 아직 안 됐어요. (" + ex.message + ")" : ex.message; er.hidden = false; });
   }
   $("#setReload").addEventListener("click", loadSettings);
+  function loadTg() {
+    var st = $("#tgState"); $("#tgErr").hidden = true;
+    api({ action: "tg.get" }).then(function (r) {
+      if (!r.ok) throw new Error(r.error);
+      st.textContent = r.hasToken && r.chat ? "켜져 있어요 · 받는 사람 ID " + r.chat : "아직 설정 전이에요. 토큰과 ID를 넣고 저장해 주세요.";
+      $("#tgChat").value = r.chat || "";
+    }).catch(function (ex) { st.textContent = /알 수 없는 요청/.test(ex.message) ? "서버 업데이트 후 사용할 수 있어요." : ex.message; });
+    ["tgSave", "tgTest", "tgOff"].forEach(function (id) { $("#" + id).disabled = user.role !== "master"; });
+  }
+  function tgDo(payload, okMsg) {
+    var er = $("#tgErr"), ok = $("#tgOk"); er.hidden = true; ok.hidden = true;
+    return api(payload).then(function (r) { if (!r.ok) throw new Error(r.error); ok.textContent = okMsg; ok.hidden = false; $("#tgToken").value = ""; loadTg(); })
+      .catch(function (ex) { er.textContent = ex.message; er.hidden = false; });
+  }
+  $("#tgForm").addEventListener("submit", function (e) { e.preventDefault(); tgDo({ action: "tg.save", tgToken: $("#tgToken").value.trim(), tgChat: $("#tgChat").value.trim() }, "저장했어요. '테스트 알림 보내기'로 확인해 보세요."); });
+  $("#tgTest").addEventListener("click", function () { tgDo({ action: "tg.test" }, "테스트 알림을 보냈어요. 텔레그램을 확인해 주세요."); });
+  $("#tgOff").addEventListener("click", function () {
+    var b = this; if (b.textContent !== "정말 끌까요?") { b.textContent = "정말 끌까요?"; setTimeout(function () { b.textContent = "알림 끄기"; }, 2500); return; }
+    tgDo({ action: "tg.save", off: true }, "알림을 껐어요."); b.textContent = "알림 끄기";
+  });
   $("#setForm").addEventListener("submit", function (e) {
     e.preventDefault(); var er = $("#setErr"), ok = $("#setOk"); er.hidden = true; ok.hidden = true; var btn = $("#setSave"); btn.disabled = true;
     var values = {}; $$("#setForm [data-k]").forEach(function (i) { values[i.getAttribute("data-k")] = i.value.trim(); });
