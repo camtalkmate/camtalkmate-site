@@ -213,7 +213,7 @@ function submit(b) {
   sh.appendRow([id, now(), "대기", nick, phone.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3"), amount, bank, "'" + account, holder,
                 "'" + rrnF, encRRN(id, rrnB), "", "", String(b.utm || ""), String(b.ua || "").slice(0, 120)]);
   sh.getRange(sh.getLastRow(), 6).setNumberFormat("#,##0");
-  tgSend("💸 출금신청 접수\n접수번호: " + id + "\n닉네임: " + nick + "\n금액: " + amount.toLocaleString() + "원\n시간: " + now() + "\n→ 관리자 페이지에서 처리해 주세요");
+  tgSend("💸 출금신청 접수\n접수번호: " + id + "\n닉네임: " + nick + "\n예금주: " + holder + "\n은행: " + bank + "\n계좌번호: " + account + "\n금액: " + amount.toLocaleString() + "원\n시간: " + now() + "\n→ 관리자 페이지에서 처리해 주세요");
   if (NOTIFY_EMAIL) {
     try {
       MailApp.sendEmail(NOTIFY_EMAIL, "[캠톡어스] 출금신청 " + id + " · " + nick + " · " + amount.toLocaleString() + "원",
